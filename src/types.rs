@@ -1,5 +1,6 @@
 pub mod chat;
 pub mod message;
+pub mod update;
 
 /// This object represents a Telegram user or bot
 #[derive(serde::Deserialize)]
