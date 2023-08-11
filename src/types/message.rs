@@ -78,25 +78,129 @@ pub struct Message {
 }
 
 #[derive(serde::Deserialize)]
-pub struct MessageEntity {}
+pub struct MessageEntity {
+    #[serde(rename = "type")]
+    pub entity_type: MessageEntityType,
+    pub offset: usize,
+    pub length: usize,
+    pub url: Option<String>,
+    pub user: Option<User>,
+    pub language: Option<String>,
+    pub custom_emoji_id: Option<String>,
+}
 
 #[derive(serde::Deserialize)]
-pub struct Animation {}
+#[serde(rename_all = "snake_case")]
+pub enum MessageEntityType {
+    Mention,
+    Hashtag,
+    Cashtag,
+    BotCommand,
+    Url,
+    Email,
+    PhoneNumber,
+    Bold,
+    Italic,
+    Underline,
+    Strikethrough,
+    Spoiler,
+    Code,
+    Pre,
+    TextLink,
+    TextMention,
+    CustomEmoji,
+}
 
 #[derive(serde::Deserialize)]
-pub struct Audio {}
+pub struct Animation {
+    pub file_id: String,
+    pub file_unique_id: String,
+    pub width: usize,
+    pub height: usize,
+    pub duration: u64,
+    pub thumbnail: Option<PhotoSize>,
+    pub file_name: Option<String>,
+    pub mime_type: Option<String>,
+    pub file_size: Option<u64>,
+}
 
 #[derive(serde::Deserialize)]
-pub struct Document {}
+pub struct Audio {
+    pub file_id: String,
+    pub file_unique_id: String,
+    pub duration: usize,
+    pub performer: Option<String>,
+    pub title: Option<String>,
+    pub file_name: Option<String>,
+    pub mime_type: Option<String>,
+    pub file_size: Option<u64>,
+    pub thumbnail: Option<PhotoSize>,
+}
 
 #[derive(serde::Deserialize)]
-pub struct PhotoSize {}
+pub struct Document {
+    pub file_id: String,
+    pub file_unique_id: String,
+    pub thumbnail: Option<PhotoSize>,
+    pub file_name: Option<String>,
+    pub mime_type: Option<String>,
+    pub file_size: Option<u64>,
+}
 
 #[derive(serde::Deserialize)]
-pub struct Sticker {}
+pub struct PhotoSize {
+    pub file_id: String,
+    pub file_unique_id: String,
+    pub width: usize,
+    pub height: usize,
+    pub file_size: Option<u64>,
+}
 
 #[derive(serde::Deserialize)]
-pub struct Video {}
+pub struct Sticker {
+    pub file_id: String,
+    pub file_unique_id: String,
+    #[serde(rename = "type")]
+    pub sticker_type: StickerType,
+    pub width: usize,
+    pub height: usize,
+    pub is_animated: bool,
+    pub is_video: bool,
+    pub thumbnail: Option<PhotoSize>,
+    pub emoji: Option<String>,
+    pub set_name: Option<String>,
+    pub premium_animation: Option<File>,
+    pub mask_position: Option<MaskPosition>,
+    pub custom_emoji_id: Option<String>,
+    pub needs_repainting: Option<bool>,
+    pub file_size: Option<u64>,
+}
+
+#[derive(serde::Deserialize)]
+pub struct File {}
+
+#[derive(serde::Deserialize)]
+pub struct MaskPosition {}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum StickerType {
+    Regular,
+    Mask,
+    CustomEmoji,
+}
+
+#[derive(serde::Deserialize)]
+pub struct Video {
+    pub file_id: String,
+    pub file_unique_id: String,
+    pub width: usize,
+    pub height: usize,
+    pub thumbnail: Option<PhotoSize>,
+    pub file_name: Option<String>,
+    pub mime_type: Option<String>,
+    pub file_size: Option<u64>,
+}
 
 #[derive(serde::Deserialize)]
 pub struct VideoNote {}
