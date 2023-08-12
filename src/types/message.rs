@@ -205,37 +205,121 @@ pub struct Video {
 }
 
 #[derive(serde::Deserialize)]
-pub struct VideoNote {}
+pub struct VideoNote {
+    pub file_id: String,
+    pub file_unique_id: String,
+    pub length: usize,
+    pub duration: usize,
+    pub thumbnail: Option<PhotoSize>,
+    pub file_size: Option<u64>,
+}
 
 #[derive(serde::Deserialize)]
-pub struct Voice {}
+pub struct Voice {
+    pub file_id: String,
+    pub file_unique_id: String,
+    pub duration: usize,
+    pub mime_type: Option<String>,
+    pub file_size: Option<usize>,
+}
 
 #[derive(serde::Deserialize)]
-pub struct Contact {}
+pub struct Contact {
+    pub phone_number: String,
+    pub first_name: String,
+    pub last_name: Option<String>,
+    pub user_id: Option<u64>,
+    pub vcard: Option<String>,
+}
 
 #[derive(serde::Deserialize)]
-pub struct Dice {}
+pub struct Dice {
+    pub emoji: String,
+    pub value: usize,
+}
 
 #[derive(serde::Deserialize)]
-pub struct Game {}
+pub struct Game {
+    pub title: String,
+    pub description: String,
+    pub photo: Vec<PhotoSize>,
+    pub text: Option<String>,
+    pub text_entites: Vec<MessageEntity>,
+    pub animation: Option<Animation>,
+}
 
 #[derive(serde::Deserialize)]
-pub struct Poll {}
+pub struct Poll {
+    pub id: String,
+    pub question: String,
+    pub options: Vec<PollOption>,
+    pub total_voter_count: usize,
+    pub is_closed: bool,
+    pub is_anonymous: bool,
+    #[serde(rename = "type")]
+    pub poll_type: String,
+    pub allows_multiple_anwsers: bool,
+    pub correct_option_id: Option<u64>,
+    pub explanation: Option<String>,
+    pub explanation_entities: Vec<MessageEntity>,
+    pub open_period: Option<usize>,
+    pub close_date: Option<usize>,
+}
 
 #[derive(serde::Deserialize)]
-pub struct Venue {}
+pub struct PollOption {
+    pub text: Option<String>,
+    pub voter_count: usize,
+}
 
 #[derive(serde::Deserialize)]
-pub struct Location {}
+pub struct Venue {
+    pub location: Location,
+    pub title: String,
+    pub address: String,
+    pub foursquare_id: Option<String>,
+    pub foursquare_type: Option<String>,
+    pub google_place_id: Option<String>,
+    pub google_place_type: Option<String>,
+}
 
 #[derive(serde::Deserialize)]
-pub struct MessageAutoDeleteTimerChanged {}
+pub struct Location {
+    pub longitude: f64,
+    pub latitude: f64,
+    pub horizontal_accuracy: Option<f64>,
+    pub live_period: Option<usize>,
+    pub heading: Option<usize>,
+    pub proximity_alert_radius: Option<usize>,
+}
 
 #[derive(serde::Deserialize)]
-pub struct Invoice {}
+pub struct MessageAutoDeleteTimerChanged {
+    pub message_auto_delete_time: usize,
+}
 
 #[derive(serde::Deserialize)]
-pub struct SuccessfulPayment {}
+pub struct Invoice {
+    pub title: String,
+    pub description: String,
+    pub start_parameter: String,
+    pub currency: String,
+    pub otal_amount: usize,
+}
+
+#[derive(serde::Deserialize)]
+pub struct SuccessfulPayment {
+    pub currency: String,
+    pub total_amount: usize,
+    pub invoice_payload: String,
+    pub shipping_option_id: Option<String>,
+    pub order_info: Option<OrderInfo>,
+    pub telegram_payment_charge_id: String,
+    pub provider_payment_charge_id: String,
+}
+
+#[derive(serde::Deserialize)]
+pub struct OrderInfo {}
 
 #[derive(serde::Deserialize)]
 pub struct UserShared {}

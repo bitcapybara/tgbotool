@@ -1,4 +1,4 @@
-use super::message::Message;
+use super::{message::Message, User};
 
 #[derive(serde::Deserialize)]
 pub struct Update {
@@ -38,7 +38,11 @@ pub struct PreCheckoutQuery {}
 pub struct Poll {}
 
 #[derive(serde::Deserialize)]
-pub struct PollAnswer {}
+pub struct PollAnswer {
+    pub poll_id: String,
+    pub user: User,
+    pub optins_ids: Vec<usize>,
+}
 
 #[derive(serde::Deserialize)]
 pub struct ChatMemberUpdated {}
