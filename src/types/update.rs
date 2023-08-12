@@ -8,7 +8,7 @@ pub struct Update {
     pub channel_post: Option<Message>,
     pub edited_channel_post: Option<Message>,
     pub inline_query: Option<InlineQuery>,
-    pub chosen_inline_result: ChosenInlineResult,
+    pub chosen_inline_result: Option<ChosenInlineResult>,
     pub callback_query: Option<CallbackQuery>,
     pub shipping_query: Option<ShippingQuery>,
     pub pre_checkout_query: Option<PreCheckoutQuery>,

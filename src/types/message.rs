@@ -49,7 +49,9 @@ pub struct Message {
     pub delete_chat_photo: bool,
     #[serde(default)]
     pub group_chat_created: bool,
+    #[serde(default)]
     pub supergroup_chat_created: bool,
+    #[serde(default)]
     pub channel_chat_created: bool,
     pub message_auto_delete_timer_changed: Option<MessageAutoDeleteTimerChanged>,
     pub migrate_to_chat_id: Option<u64>,

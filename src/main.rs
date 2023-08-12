@@ -1,5 +1,6 @@
-use axum::{routing::post, Router};
+use axum::{debug_handler, routing::post, Json, Router};
 use clap::Parser;
+use types::update::Update;
 
 pub mod types;
 
@@ -14,17 +15,24 @@ struct Args {
 #[tokio::main]
 async fn main() {
     let args = Args::parse();
-    let app = Router::new().route(
-        "/",
-        post(|| async {
-            println!("====");
-            "hello, world"
-        }),
-    );
+    let app = Router::new().route("/", post(process_webhook));
 
     let addr = format!("{}:{}", args.ip, args.port).parse().unwrap();
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
         .unwrap();
+}
+
+#[debug_handler]
+async fn process_webhook(Json(update): Json<Update>) {
+    // match serde_json::from_str::<Update>(&request) {
+    //     Ok(update) => {
+    //         println!("{:?}", update.update_id);
+    //     }
+    //     Err(e) => {
+    //         println!("{e}")
+    //     }
+    // };
+    println!("{}", update.update_id)
 }
