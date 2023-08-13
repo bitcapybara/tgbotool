@@ -1,5 +1,8 @@
 pub mod chat;
+pub mod game;
 pub mod message;
+pub mod passport;
+pub mod payment;
 pub mod update;
 
 /// This object represents a Telegram user or bot

@@ -1,4 +1,10 @@
-use super::{chat::Chat, User};
+use super::{
+    chat::Chat,
+    game::Game,
+    passport::PassportData,
+    payment::{Invoice, SuccessfulPayment},
+    User,
+};
 
 #[derive(serde::Deserialize)]
 pub struct Message {
@@ -239,16 +245,6 @@ pub struct Dice {
 }
 
 #[derive(serde::Deserialize)]
-pub struct Game {
-    pub title: String,
-    pub description: String,
-    pub photo: Vec<PhotoSize>,
-    pub text: Option<String>,
-    pub text_entites: Vec<MessageEntity>,
-    pub animation: Option<Animation>,
-}
-
-#[derive(serde::Deserialize)]
 pub struct Poll {
     pub id: String,
     pub question: String,
@@ -299,39 +295,21 @@ pub struct MessageAutoDeleteTimerChanged {
 }
 
 #[derive(serde::Deserialize)]
-pub struct Invoice {
-    pub title: String,
-    pub description: String,
-    pub start_parameter: String,
-    pub currency: String,
-    pub otal_amount: usize,
+pub struct UserShared {
+    pub request_id: u64,
+    pub user_id: u64,
 }
 
 #[derive(serde::Deserialize)]
-pub struct SuccessfulPayment {
-    pub currency: String,
-    pub total_amount: usize,
-    pub invoice_payload: String,
-    pub shipping_option_id: Option<String>,
-    pub order_info: Option<OrderInfo>,
-    pub telegram_payment_charge_id: String,
-    pub provider_payment_charge_id: String,
+pub struct ChatShared {
+    pub request_id: u64,
+    pub chat_id: u64,
 }
 
 #[derive(serde::Deserialize)]
-pub struct OrderInfo {}
-
-#[derive(serde::Deserialize)]
-pub struct UserShared {}
-
-#[derive(serde::Deserialize)]
-pub struct ChatShared {}
-
-#[derive(serde::Deserialize)]
-pub struct WriteAccessAllowed {}
-
-#[derive(serde::Deserialize)]
-pub struct PassportData {}
+pub struct WriteAccessAllowed {
+    pub web_app_name: Option<String>,
+}
 
 #[derive(serde::Deserialize)]
 pub struct ProximityAlertTriggerd {}

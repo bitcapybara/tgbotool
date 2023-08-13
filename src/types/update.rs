@@ -1,4 +1,4 @@
-use super::{message::Message, User};
+use super::{message::Message, payment::ShippingQuery, User};
 
 #[derive(serde::Deserialize)]
 pub struct Update {
@@ -27,9 +27,6 @@ pub struct ChosenInlineResult {}
 
 #[derive(serde::Deserialize)]
 pub struct CallbackQuery {}
-
-#[derive(serde::Deserialize)]
-pub struct ShippingQuery {}
 
 #[derive(serde::Deserialize)]
 pub struct PreCheckoutQuery {}
