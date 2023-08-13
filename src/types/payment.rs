@@ -58,3 +58,14 @@ pub struct ShippingOption {
     pub title: String,
     pub prices: Vec<LabeledPrice>,
 }
+
+#[derive(serde::Deserialize)]
+pub struct PreCheckoutQuery {
+    pub id: String,
+    pub from: User,
+    pub currency: String,
+    pub total_amount: usize,
+    pub invoice_payload: String,
+    pub shipping_option_id: Option<String>,
+    pub order_info: Option<OrderInfo>,
+}

@@ -70,7 +70,7 @@ pub struct Message {
     pub connected_website: Option<String>,
     pub write_access_allowd: Option<WriteAccessAllowed>,
     pub passport_data: Option<PassportData>,
-    pub proximity_alert_triggered: Option<ProximityAlertTriggerd>,
+    pub proximity_alert_triggered: Option<ProximityAlertTriggered>,
     pub forum_topic_created: Option<ForumTopicCreated>,
     pub forum_topic_edited: Option<ForumTopicEdited>,
     pub forum_topic_closed: Option<ForumTopicClosed>,
@@ -185,10 +185,20 @@ pub struct Sticker {
 }
 
 #[derive(serde::Deserialize)]
-pub struct File {}
+pub struct File {
+    pub file_id: String,
+    pub file_unique_id: String,
+    pub file_size: Option<u64>,
+    pub file_path: Option<String>,
+}
 
 #[derive(serde::Deserialize)]
-pub struct MaskPosition {}
+pub struct MaskPosition {
+    pub point: String,
+    pub x_shift: f64,
+    pub y_shift: f64,
+    pub scale: f64,
+}
 
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -312,13 +322,24 @@ pub struct WriteAccessAllowed {
 }
 
 #[derive(serde::Deserialize)]
-pub struct ProximityAlertTriggerd {}
+pub struct ProximityAlertTriggered {
+    pub traveler: User,
+    pub watcher: User,
+    pub distance: usize,
+}
 
 #[derive(serde::Deserialize)]
-pub struct ForumTopicCreated {}
+pub struct ForumTopicCreated {
+    pub name: String,
+    pub icon_color: usize,
+    pub icon_custom_emoji_id: Option<String>,
+}
 
 #[derive(serde::Deserialize)]
-pub struct ForumTopicEdited {}
+pub struct ForumTopicEdited {
+    pub name: Option<String>,
+    pub icon_custom_emoji_id: Option<String>,
+}
 
 #[derive(serde::Deserialize)]
 pub struct ForumTopicClosed {}
@@ -333,19 +354,69 @@ pub struct GeneralForumTopicHidden {}
 pub struct GeneralForumTopicUnHidden {}
 
 #[derive(serde::Deserialize)]
-pub struct VideoChatScheduled {}
+pub struct VideoChatScheduled {
+    pub start_date: u64,
+}
 
 #[derive(serde::Deserialize)]
 pub struct VideoChatStarted {}
 
 #[derive(serde::Deserialize)]
-pub struct VideoChatEnded {}
+pub struct VideoChatEnded {
+    pub duration: u64,
+}
 
 #[derive(serde::Deserialize)]
-pub struct VideoChatParticipantsInvited {}
+pub struct VideoChatParticipantsInvited {
+    pub users: Vec<User>,
+}
 
 #[derive(serde::Deserialize)]
-pub struct WebAppData {}
+pub struct WebAppData {
+    pub data: String,
+    pub button_text: String,
+}
 
 #[derive(serde::Deserialize)]
-pub struct InlineKeyboardMarkup {}
+pub struct InlineKeyboardMarkup {
+    pub inline_keyboard: Vec<Vec<InlineKeyboardButton>>,
+}
+
+#[derive(serde::Deserialize)]
+pub struct InlineKeyboardButton {
+    pub text: String,
+    pub url: Option<String>,
+    pub callback_data: Option<String>,
+    pub web_app: Option<WebAppInfo>,
+    pub login_url: Option<LoginUrl>,
+    pub switch_inline_query: Option<String>,
+    pub switch_inline_query_current_chat: Option<String>,
+    pub switch_inline_query_chosen_chat: Option<SwitchInlineQueryChosenChat>,
+    pub callback_game: Option<CallbackGame>,
+    pub pay: Option<bool>,
+}
+
+#[derive(serde::Deserialize)]
+pub struct WebAppInfo {
+    pub url: String,
+}
+
+#[derive(serde::Deserialize)]
+pub struct LoginUrl {
+    pub url: String,
+    pub forward_text: Option<String>,
+    pub bot_username: Option<String>,
+    pub request_write_access: Option<bool>,
+}
+
+#[derive(serde::Deserialize)]
+pub struct SwitchInlineQueryChosenChat {
+    pub query: Option<String>,
+    pub allow_user_chats: Option<bool>,
+    pub allow_bot_chats: Option<bool>,
+    pub allow_group_chats: Option<bool>,
+    pub allow_channel_chats: Option<bool>,
+}
+
+#[derive(serde::Deserialize)]
+pub struct CallbackGame {}
