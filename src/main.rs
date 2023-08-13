@@ -1,8 +1,6 @@
 use axum::{debug_handler, routing::post, Json, Router};
 use clap::Parser;
-use types::update::Update;
-
-pub mod types;
+use tg_cuckoo_bot::types::update::Update;
 
 #[derive(clap::Parser)]
 struct Args {

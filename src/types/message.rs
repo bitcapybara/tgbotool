@@ -97,7 +97,7 @@ pub struct MessageEntity {
     pub custom_emoji_id: Option<String>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum MessageEntityType {
     Mention,

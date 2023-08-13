@@ -1,4 +1,10 @@
-use super::{message::Message, payment::ShippingQuery, User};
+use crate::command::BotCommand;
+
+use super::{
+    message::{Message, MessageEntityType},
+    payment::ShippingQuery,
+    User,
+};
 
 #[derive(serde::Deserialize)]
 pub struct Update {
@@ -17,6 +23,23 @@ pub struct Update {
     pub my_chat_member: Option<ChatMemberUpdated>,
     pub chat_member: Option<ChatMemberUpdated>,
     pub chat_join_request: Option<ChatJoinRequest>,
+}
+
+impl Update {
+    fn command<C: BotCommand>(&self) -> Option<C> {
+        self.message
+            .as_ref()
+            .filter(|m| {
+                m.entities
+                    .as_ref()
+                    .and_then(|entities| entities.get(0))
+                    .is_some_and(|en| {
+                        en.entity_type == MessageEntityType::BotCommand && en.offset == 0
+                    })
+            })
+            .and_then(|m| m.text.as_ref())
+            .and_then(|t| C::parse(t))
+    }
 }
 
 #[derive(serde::Deserialize)]
