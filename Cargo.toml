@@ -1,14 +1,22 @@
+[workspace]
+members = [
+  "derive"
+]
+
 [package]
 name = "tg-cuckoo-bot"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0.72"
-axum = { version = "0.6.20", features = ["macros"] }
-clap = { version = "4.3.21", features = ["derive", "env"] }
 heck = "0.4.1"
 serde = { version = "1.0.183", features = ["derive"] }
 serde_json = "1.0.104"
 thiserror = "1.0.44"
+tg-cuckoo-bot-derive = { version = "0.1.0", path = "derive"}
+
+[dev-dependencies]
+anyhow = "1.0.72"
+axum = { version = "0.6.20", features = ["macros"] }
+clap = { version = "4.3.21", features = ["derive", "env"] }
 tokio = { version = "1.30.0", features = ["macros", "rt-multi-thread"] }

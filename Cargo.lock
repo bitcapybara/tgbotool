@@ -675,8 +675,18 @@ dependencies = [
  "heck",
  "serde",
  "serde_json",
+ "tg-cuckoo-bot-derive",
  "thiserror",
  "tokio",
+]
+
+[[package]]
+name = "tg-cuckoo-bot-derive"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
