@@ -1,4 +1,4 @@
-use crate::command::BotCommand;
+use crate::command::{self, BotCommand};
 
 use super::{
     message::{Message, MessageEntityType},
@@ -26,7 +26,7 @@ pub struct Update {
 }
 
 impl Update {
-    fn command<C: BotCommand>(&self) -> Option<C> {
+    fn command<C: BotCommand>(&self) -> Result<Option<C>, command::Error> {
         self.message
             .as_ref()
             .filter(|m| {
@@ -38,7 +38,8 @@ impl Update {
                     })
             })
             .and_then(|m| m.text.as_ref())
-            .and_then(|t| C::parse(t))
+            .map(|t| C::parse(t))
+            .transpose()
     }
 }
 

@@ -672,6 +672,7 @@ dependencies = [
  "anyhow",
  "axum",
  "clap",
+ "heck",
  "serde",
  "serde_json",
  "thiserror",
