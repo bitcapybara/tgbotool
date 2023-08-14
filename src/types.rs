@@ -401,12 +401,21 @@ pub struct WebAppData {
     pub button_text: String,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct InlineKeyboardMarkup {
     pub inline_keyboard: Vec<Vec<InlineKeyboardButton>>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct ReplyKeyboardMarkup {}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct ReplyKeyboardRemove {}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct ForceReply {}
+
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct InlineKeyboardButton {
     pub text: String,
     pub url: Option<String>,
@@ -420,12 +429,12 @@ pub struct InlineKeyboardButton {
     pub pay: Option<bool>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct WebAppInfo {
     pub url: String,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct LoginUrl {
     pub url: String,
     pub forward_text: Option<String>,
@@ -433,7 +442,7 @@ pub struct LoginUrl {
     pub request_write_access: Option<bool>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct SwitchInlineQueryChosenChat {
     pub query: Option<String>,
     pub allow_user_chats: Option<bool>,
@@ -442,5 +451,5 @@ pub struct SwitchInlineQueryChosenChat {
     pub allow_channel_chats: Option<bool>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct CallbackGame {}

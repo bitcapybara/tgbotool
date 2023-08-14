@@ -1,5 +1,5 @@
 /// This object represents a Telegram user or bot
-#[derive(serde::Deserialize)]
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
 pub struct User {
     /// Unique identifier for this user or bot
     pub id: u64,

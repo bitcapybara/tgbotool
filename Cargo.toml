@@ -13,6 +13,8 @@ serde = { version = "1.0.183", features = ["derive"] }
 serde_json = "1.0.104"
 thiserror = "1.0.44"
 tg-cuckoo-bot-derive = { version = "0.1.0", path = "derive"}
+reqwest = { version = "0.11.18", features = ["json"] }
+serde_with = { version = "3.2.0", features = ["macros"] }
 
 [dev-dependencies]
 anyhow = "1.0.72"

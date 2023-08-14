@@ -1,9 +1,16 @@
-use axum::{debug_handler, routing::post, Json, Router};
+use axum::{debug_handler, extract::State, routing::post, Json, Router};
 use clap::Parser;
-use tg_cuckoo_bot::{types::update::Update, BotCommand};
+use tg_cuckoo_bot::{
+    client::Client,
+    methods::message::{ChatId, SendMessageBuilder},
+    types::update::{Update, UpdateType},
+    BotCommand,
+};
 
 #[derive(clap::Parser)]
 struct Args {
+    #[arg(env = "TG_BOT_TOKEN")]
+    bot_token: String,
     #[arg(short, long, default_value = "0.0.0.0", env = "TG_CUCKOO_BOT_IP")]
     ip: String,
     #[arg(short, long, default_value_t = 9077, env = "TG_CUCKOO_BOT_PORT")]
@@ -13,7 +20,10 @@ struct Args {
 #[tokio::main]
 async fn main() {
     let args = Args::parse();
-    let app = Router::new().route("/", post(process_webhook));
+    let client = Client::new(&args.bot_token);
+    let app = Router::new()
+        .route("/", post(process_webhook))
+        .with_state(client);
 
     let addr = format!("{}:{}", args.ip, args.port).parse().unwrap();
     axum::Server::bind(&addr)
@@ -35,7 +45,7 @@ pub enum Cuckoo {
 }
 
 #[debug_handler]
-async fn process_webhook(Json(update): Json<Update>) {
+async fn process_webhook(State(client): State<Client>, Json(update): Json<Update>) {
     // match serde_json::from_str::<Update>(&request) {
     //     Ok(update) => {
     //         println!("{:?}", update.update_id);
@@ -44,5 +54,10 @@ async fn process_webhook(Json(update): Json<Update>) {
     //         println!("{e}")
     //     }
     // };
-    println!("{:?}", update.command::<Cuckoo>())
+    if let UpdateType::Message(msg) = &update.update_type {
+        let send_message = SendMessageBuilder::new(ChatId::Chat(msg.chat.id), "aaa").build();
+        if let Err(e) = client.send_message(send_message).await {
+            println!("send_message error: {e}");
+        }
+    }
 }

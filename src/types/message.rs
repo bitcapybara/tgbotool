@@ -90,7 +90,7 @@ pub struct Message {
     pub reply_markup: Option<InlineKeyboardMarkup>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
 pub struct MessageEntity {
     #[serde(rename = "type")]
     pub entity_type: MessageEntityType,
@@ -102,7 +102,7 @@ pub struct MessageEntity {
     pub custom_emoji_id: Option<String>,
 }
 
-#[derive(serde::Deserialize, PartialEq)]
+#[derive(Copy, Clone, serde::Serialize, serde::Deserialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum MessageEntityType {
     Mention,
