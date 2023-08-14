@@ -1,5 +1,6 @@
+use std::str::{FromStr, SplitAsciiWhitespace};
+
 pub trait BotCommand: Sized {
-    fn bot_name() -> String;
     fn parse(message: &str) -> Result<Self, Error>;
 }
 
@@ -15,4 +16,16 @@ pub enum Error {
     UnknownCmd,
     #[error("")]
     ParseError(String),
+}
+
+pub fn next_arg<T>(words: &mut SplitAsciiWhitespace) -> Result<T, Error>
+where
+    T: FromStr,
+    T::Err: std::fmt::Display,
+{
+    words
+        .next()
+        .ok_or(Error::TooFewArgs)?
+        .parse::<T>()
+        .map_err(|e| Error::ParseError(e.to_string()))
 }

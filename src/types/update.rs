@@ -34,7 +34,7 @@ pub enum UpdateType {
 }
 
 impl Update {
-    fn command<C: BotCommand>(&self) -> Result<Option<C>, command::Error> {
+    pub fn command<C: BotCommand>(&self) -> Result<Option<C>, command::Error> {
         match &self.update_type {
             UpdateType::Message(message) => Some(message),
             _ => None,
