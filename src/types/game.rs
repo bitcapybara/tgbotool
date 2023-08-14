@@ -1,4 +1,4 @@
-use super::message::{Animation, MessageEntity, PhotoSize};
+use super::{message::MessageEntity, Animation, PhotoSize};
 
 #[derive(serde::Deserialize)]
 pub struct Game {

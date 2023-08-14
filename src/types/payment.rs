@@ -1,4 +1,4 @@
-use super::User;
+use super::user::User;
 
 #[derive(serde::Deserialize)]
 pub struct OrderInfo {
