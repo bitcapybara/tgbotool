@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::methods::{answer_callback_query::AnswerCallbackQuery, message::SendMessage};
+use crate::methods::{answer_callback_query::AnswerCallbackQuery, send_message::SendMessage};
 
 type Result<T, E = Error> = std::result::Result<T, E>;
 

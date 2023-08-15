@@ -3,8 +3,8 @@ use clap::Parser;
 use tgbotool::{
     client::Client,
     methods::{
-        answer_callback_query::AnswerCallbackQueryBuilder,
-        message::{ChatId, ReplyMarkup, SendMessageBuilder},
+        answer_callback_query::AnswerCallbackQueryBuilder, send_message::SendMessageBuilder,
+        ChatId, ReplyMarkup,
     },
     types::{
         update::{Update, UpdateType},
@@ -39,7 +39,7 @@ async fn main() {
 }
 
 #[derive(Debug, BotCommand)]
-#[command(rename_rule = "snake_case")]
+#[command(bot_name = "yx_cuckoo_bot", rename_rule = "snake_case")]
 pub enum Cuckoo {
     #[command(rename = "/help")]
     Help,
@@ -66,8 +66,6 @@ async fn process_webhook(State(client): State<Client>, Json(update): Json<Update
                         .build(),
                 ]]))
                 .build();
-            let a = serde_json::to_string_pretty(&send_message).unwrap();
-            println!("{a}");
             if let Err(e) = client.send_message(send_message).await {
                 println!("send_message error: {e}");
             }

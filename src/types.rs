@@ -424,7 +424,7 @@ pub struct ReplyKeyboardRemove {}
 pub struct ForceReply {}
 
 #[skip_serializing_none]
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, tgbotool_derive::Builder)]
 pub struct InlineKeyboardButton {
     pub text: String,
     pub url: Option<String>,
@@ -436,99 +436,6 @@ pub struct InlineKeyboardButton {
     pub switch_inline_query_chosen_chat: Option<SwitchInlineQueryChosenChat>,
     pub callback_game: Option<CallbackGame>,
     pub pay: Option<bool>,
-}
-
-pub struct InlineKeyboardButtonBuilder {
-    pub text: String,
-    pub url: Option<String>,
-    pub callback_data: Option<String>,
-    pub web_app: Option<WebAppInfo>,
-    pub login_url: Option<LoginUrl>,
-    pub switch_inline_query: Option<String>,
-    pub switch_inline_query_current_chat: Option<String>,
-    pub switch_inline_query_chosen_chat: Option<SwitchInlineQueryChosenChat>,
-    pub callback_game: Option<CallbackGame>,
-    pub pay: Option<bool>,
-}
-
-impl InlineKeyboardButtonBuilder {
-    pub fn new(text: &str) -> Self {
-        Self {
-            text: text.to_owned(),
-            url: None,
-            callback_data: None,
-            web_app: None,
-            login_url: None,
-            switch_inline_query: None,
-            switch_inline_query_current_chat: None,
-            switch_inline_query_chosen_chat: None,
-            callback_game: None,
-            pay: None,
-        }
-    }
-
-    pub fn url(mut self, url: &str) -> Self {
-        self.url = Some(url.to_owned());
-        self
-    }
-
-    pub fn callback_data(mut self, data: &str) -> Self {
-        self.callback_data = Some(data.to_owned());
-        self
-    }
-
-    pub fn web_app(mut self, web_app: WebAppInfo) -> Self {
-        self.web_app = Some(web_app);
-        self
-    }
-
-    pub fn login_url(mut self, login_url: LoginUrl) -> Self {
-        self.login_url = Some(login_url);
-        self
-    }
-
-    pub fn switch_inline_query(mut self, switch_inline_query: &str) -> Self {
-        self.switch_inline_query = Some(switch_inline_query.to_owned());
-        self
-    }
-
-    pub fn switch_inline_query_current_chat(mut self, current_chat: &str) -> Self {
-        self.switch_inline_query_current_chat = Some(current_chat.to_owned());
-        self
-    }
-
-    pub fn switch_inline_query_chosen_chat(
-        mut self,
-        chosen_chat: SwitchInlineQueryChosenChat,
-    ) -> Self {
-        self.switch_inline_query_chosen_chat = Some(chosen_chat);
-        self
-    }
-
-    pub fn callback_game(mut self, callback_game: CallbackGame) -> Self {
-        self.callback_game = Some(callback_game);
-        self
-    }
-
-    pub fn pay(mut self, pay: bool) -> Self {
-        self.pay = Some(pay);
-        self
-    }
-
-    pub fn build(self) -> InlineKeyboardButton {
-        InlineKeyboardButton {
-            text: self.text,
-            url: self.url,
-            callback_data: self.callback_data,
-            web_app: self.web_app,
-            login_url: self.login_url,
-            switch_inline_query: self.switch_inline_query,
-            switch_inline_query_current_chat: self.switch_inline_query_current_chat,
-            switch_inline_query_chosen_chat: self.switch_inline_query_chosen_chat,
-            callback_game: self.callback_game,
-            pay: self.pay,
-        }
-    }
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
