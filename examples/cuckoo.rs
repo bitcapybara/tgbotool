@@ -4,7 +4,7 @@ use tg_cuckoo_bot::{
     client::Client,
     methods::{
         answer_callback_query::AnswerCallbackQueryBuilder,
-        message::{ChatId, ReplyMarkUp, SendMessageBuilder},
+        message::{ChatId, ReplyMarkup, SendMessageBuilder},
     },
     types::{
         update::{Update, UpdateType},
@@ -57,16 +57,14 @@ async fn process_webhook(State(client): State<Client>, Json(update): Json<Update
             let Some(text) = &msg.text else { return };
             let chat_id = ChatId::Chat(msg.chat.id);
             let send_message = SendMessageBuilder::new(chat_id, text)
-                .reply_markup(ReplyMarkUp::InlineKeyboardMarkup(
-                    InlineKeyboardMarkup::new(vec![vec![
-                        InlineKeyboardButtonBuilder::new("取消")
-                            .callback_data("cancel")
-                            .build(),
-                        InlineKeyboardButtonBuilder::new("确定")
-                            .callback_data("ok")
-                            .build(),
-                    ]]),
-                ))
+                .reply_markup(ReplyMarkup::inline_keyboard(vec![vec![
+                    InlineKeyboardButtonBuilder::new("取消")
+                        .callback_data("cancel")
+                        .build(),
+                    InlineKeyboardButtonBuilder::new("确定")
+                        .callback_data("ok")
+                        .build(),
+                ]]))
                 .build();
             let a = serde_json::to_string_pretty(&send_message).unwrap();
             println!("{a}");

@@ -1,8 +1,8 @@
 use serde_with::skip_serializing_none;
 
 use crate::types::{
-    message::MessageEntity, ForceReply, InlineKeyboardMarkup, ReplyKeyboardMarkup,
-    ReplyKeyboardRemove,
+    message::MessageEntity, ForceReply, InlineKeyboardButton, InlineKeyboardMarkup,
+    ReplyKeyboardMarkup, ReplyKeyboardRemove,
 };
 
 pub struct SendMessageBuilder {
@@ -16,7 +16,7 @@ pub struct SendMessageBuilder {
     protect_content: Option<bool>,
     reply_to_message_id: Option<u64>,
     allow_sending_without_reply: Option<bool>,
-    reply_markup: Option<ReplyMarkUp>,
+    reply_markup: Option<ReplyMarkup>,
 }
 
 impl SendMessageBuilder {
@@ -82,7 +82,7 @@ impl SendMessageBuilder {
         self
     }
 
-    pub fn reply_markup(mut self, reply_markup: ReplyMarkUp) -> Self {
+    pub fn reply_markup(mut self, reply_markup: ReplyMarkup) -> Self {
         self.reply_markup = Some(reply_markup);
         self
     }
@@ -113,11 +113,17 @@ pub enum ChatId {
 
 #[derive(serde::Serialize, serde::Deserialize)]
 #[serde(untagged)]
-pub enum ReplyMarkUp {
+pub enum ReplyMarkup {
     InlineKeyboardMarkup(InlineKeyboardMarkup),
     ReplyKeyboardMarkup(ReplyKeyboardMarkup),
     ReplyKeyboardRemove(ReplyKeyboardRemove),
     ForceReply(ForceReply),
+}
+
+impl ReplyMarkup {
+    pub fn inline_keyboard(keyboard: Vec<Vec<InlineKeyboardButton>>) -> Self {
+        Self::InlineKeyboardMarkup(InlineKeyboardMarkup::new(keyboard))
+    }
 }
 
 #[skip_serializing_none]
@@ -133,5 +139,5 @@ pub struct SendMessage {
     protect_content: Option<bool>,
     reply_to_message_id: Option<u64>,
     allow_sending_without_reply: Option<bool>,
-    reply_markup: Option<ReplyMarkUp>,
+    reply_markup: Option<ReplyMarkup>,
 }
