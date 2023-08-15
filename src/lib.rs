@@ -5,4 +5,4 @@ pub mod command;
 pub mod methods;
 pub mod types;
 
-pub use tg_cuckoo_bot_derive::*;
+pub use tgbotool_derive::*;

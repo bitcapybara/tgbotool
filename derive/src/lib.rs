@@ -118,9 +118,9 @@ fn bot_command_inner(input: DeriveInput) -> Result<TokenStream, Error> {
         }
     }
     Ok(quote! {
-        impl tg_cuckoo_bot::command::BotCommand for #enum_ident {
-            fn parse(message: &str) -> Result<Self, tg_cuckoo_bot::command::Error> {
-                use tg_cuckoo_bot::command;
+        impl tgbotool::command::BotCommand for #enum_ident {
+            fn parse(message: &str) -> Result<Self, tgbotool::command::Error> {
+                use tgbotool::command;
                 let mut words = message.split_ascii_whitespace();
                 let mut command_and_bot_name = words.next().ok_or(command::Error::TooFewArgs)?.split('@');
                 let command = command_and_bot_name.next().ok_or(command::Error::TooFewArgs)?;

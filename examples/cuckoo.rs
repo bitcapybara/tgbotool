@@ -1,6 +1,6 @@
 use axum::{debug_handler, extract::State, routing::post, Json, Router};
 use clap::Parser;
-use tg_cuckoo_bot::{
+use tgbotool::{
     client::Client,
     methods::{
         answer_callback_query::AnswerCallbackQueryBuilder,
