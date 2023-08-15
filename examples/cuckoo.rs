@@ -8,7 +8,7 @@ use tg_cuckoo_bot::{
     },
     types::{
         update::{Update, UpdateType},
-        InlineKeyboardButtonBuilder, InlineKeyboardMarkup,
+        InlineKeyboardButtonBuilder,
     },
     BotCommand,
 };
