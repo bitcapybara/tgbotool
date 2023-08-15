@@ -2,8 +2,14 @@ use axum::{debug_handler, extract::State, routing::post, Json, Router};
 use clap::Parser;
 use tg_cuckoo_bot::{
     client::Client,
-    methods::message::{ChatId, SendMessageBuilder},
-    types::update::{Update, UpdateType},
+    methods::{
+        answer_callback_query::AnswerCallbackQueryBuilder,
+        message::{ChatId, ReplyMarkUp, SendMessageBuilder},
+    },
+    types::{
+        update::{Update, UpdateType},
+        InlineKeyboardButtonBuilder, InlineKeyboardMarkup,
+    },
     BotCommand,
 };
 
@@ -46,18 +52,49 @@ pub enum Cuckoo {
 
 #[debug_handler]
 async fn process_webhook(State(client): State<Client>, Json(update): Json<Update>) {
-    // match serde_json::from_str::<Update>(&request) {
-    //     Ok(update) => {
-    //         println!("{:?}", update.update_id);
-    //     }
-    //     Err(e) => {
-    //         println!("{e}")
-    //     }
-    // };
-    if let UpdateType::Message(msg) = &update.update_type {
-        let send_message = SendMessageBuilder::new(ChatId::Chat(msg.chat.id), "aaa").build();
-        if let Err(e) = client.send_message(send_message).await {
-            println!("send_message error: {e}");
+    match &update.update_type {
+        UpdateType::Message(msg) => {
+            let Some(text) = &msg.text else { return };
+            let chat_id = ChatId::Chat(msg.chat.id);
+            let send_message = SendMessageBuilder::new(chat_id, text)
+                .reply_markup(ReplyMarkUp::InlineKeyboardMarkup(
+                    InlineKeyboardMarkup::new(vec![vec![
+                        InlineKeyboardButtonBuilder::new("取消")
+                            .callback_data("cancel")
+                            .build(),
+                        InlineKeyboardButtonBuilder::new("确定")
+                            .callback_data("ok")
+                            .build(),
+                    ]]),
+                ))
+                .build();
+            let a = serde_json::to_string_pretty(&send_message).unwrap();
+            println!("{a}");
+            if let Err(e) = client.send_message(send_message).await {
+                println!("send_message error: {e}");
+            }
         }
+        UpdateType::EditedMessage(_) => todo!(),
+        UpdateType::ChannelPost(_) => todo!(),
+        UpdateType::EditedChannelPost(_) => todo!(),
+        UpdateType::InlineQuery(_) => todo!(),
+        UpdateType::ChosenInlineResult(_) => todo!(),
+        UpdateType::CallbackQuery(cq) => {
+            println!("receive callback: {:?}", cq.data.as_ref());
+            let mut answer_message = AnswerCallbackQueryBuilder::new(&cq.id);
+            if let Some(data) = cq.data.as_ref() {
+                answer_message = answer_message.text(data).show_alert(true);
+            }
+            if let Err(e) = client.answer_callback_query(answer_message.build()).await {
+                println!("send callback answer error: {e}")
+            }
+        }
+        UpdateType::ShippingQuery(_) => todo!(),
+        UpdateType::PreCheckoutQuery(_) => todo!(),
+        UpdateType::Poll(_) => todo!(),
+        UpdateType::PollAnswer(_) => todo!(),
+        UpdateType::MyChatMember(_) => todo!(),
+        UpdateType::ChatMember(_) => todo!(),
+        UpdateType::ChatJoinRequest(_) => todo!(),
     }
 }

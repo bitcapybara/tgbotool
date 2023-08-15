@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::methods::message::SendMessage;
+use crate::methods::{answer_callback_query::AnswerCallbackQuery, message::SendMessage};
 
 type Result<T, E = Error> = std::result::Result<T, E>;
 
@@ -71,5 +71,9 @@ impl Client {
 
     pub async fn send_message(&self, message: SendMessage) -> Result<()> {
         self.send_ok("sendMessage", message).await
+    }
+
+    pub async fn answer_callback_query(&self, message: AnswerCallbackQuery) -> Result<()> {
+        self.send_ok("answerCallbackQuery", message).await
     }
 }

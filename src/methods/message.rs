@@ -112,6 +112,7 @@ pub enum ChatId {
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
+#[serde(untagged)]
 pub enum ReplyMarkUp {
     InlineKeyboardMarkup(InlineKeyboardMarkup),
     ReplyKeyboardMarkup(ReplyKeyboardMarkup),
@@ -132,6 +133,5 @@ pub struct SendMessage {
     protect_content: Option<bool>,
     reply_to_message_id: Option<u64>,
     allow_sending_without_reply: Option<bool>,
-    #[serde(flatten)]
     reply_markup: Option<ReplyMarkUp>,
 }
