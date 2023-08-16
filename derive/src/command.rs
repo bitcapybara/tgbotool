@@ -150,7 +150,7 @@ pub fn parse_lit(input: ParseStream) -> Result<(Ident, String), syn::Error> {
     let key = input.parse::<Ident>()?;
     input.parse::<Token![=]>()?;
     let Lit::Str(s) = input.parse::<Lit>()? else {
-            panic!("expected string attr value");
-        };
+        panic!("expected string attr value");
+    };
     Ok((key, s.value()))
 }

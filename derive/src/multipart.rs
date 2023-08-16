@@ -81,8 +81,8 @@ pub(crate) fn multipart_inner(input: DeriveInput) -> Result<TokenStream, syn::Er
                 };
                 if fident == field {
                     let Some(converter) = &multi_attr.converter else {
-                            panic!("converter attr not found");
-                        };
+                        panic!("converter attr not found");
+                    };
                     quote! {
                         if let Some(send_file) = this.#fident {
                             form = form.part(#fident_str, send_file.#converter());
