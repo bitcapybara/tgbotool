@@ -12,14 +12,6 @@ pub(crate) fn bot_command_inner(input: DeriveInput) -> Result<TokenStream, syn::
     };
     // get attributes on enum
     let enum_ident = input.ident;
-    let parse_lit = |input: ParseStream| -> Result<(Ident, String), syn::Error> {
-        let key = input.parse::<Ident>()?;
-        input.parse::<Token![=]>()?;
-        let Lit::Str(s) = input.parse::<Lit>()? else {
-            panic!("expected string attr value");
-        };
-        Ok((key, s.value()))
-    };
     let mut command_enum = CommandEnum::default();
     for enum_attr in input.attrs {
         if !enum_attr.path().is_ident("command") {
@@ -152,4 +144,13 @@ fn case_conv(origin: &str, rename_rule: Option<&str>) -> String {
         Some(_) => panic!("unsupported rename rule"),
         None => origin.to_owned(),
     }
+}
+
+pub fn parse_lit(input: ParseStream) -> Result<(Ident, String), syn::Error> {
+    let key = input.parse::<Ident>()?;
+    input.parse::<Token![=]>()?;
+    let Lit::Str(s) = input.parse::<Lit>()? else {
+            panic!("expected string attr value");
+        };
+    Ok((key, s.value()))
 }

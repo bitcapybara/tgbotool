@@ -1,4 +1,5 @@
-use std::path::PathBuf;
+use reqwest::multipart;
+use serde_with::skip_serializing_none;
 
 use crate::types::{
     ForceReply, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup,
@@ -31,9 +32,38 @@ impl ReplyMarkup {
     }
 }
 
+#[skip_serializing_none]
 #[derive(serde::Serialize)]
 #[serde(untagged)]
-pub enum File {
-    Input(PathBuf),
-    FileId(String),
+pub enum SendFile {
+    UploadInput {
+        file_name: String,
+        file_bytes: Vec<u8>,
+    },
+    FileIdOrUrl(String),
+}
+
+impl SendFile {
+    pub fn file_id_or_url<S>(id: S) -> Self
+    where
+        S: Into<String>,
+    {
+        Self::FileIdOrUrl(id.into())
+    }
+
+    pub fn input(file_name: &str, input: Vec<u8>) -> Self {
+        Self::UploadInput {
+            file_name: file_name.to_string(),
+            file_bytes: input,
+        }
+    }
+    pub fn into_part(self) -> reqwest::multipart::Part {
+        match self {
+            SendFile::UploadInput {
+                file_name,
+                file_bytes,
+            } => multipart::Part::bytes(file_bytes).file_name(file_name),
+            SendFile::FileIdOrUrl(s) => reqwest::multipart::Part::text(s),
+        }
+    }
 }

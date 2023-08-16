@@ -1,14 +1,9 @@
 use proc_macro::TokenStream;
-use proc_macro2::{Ident, Span};
+use proc_macro2::Span;
 use quote::quote;
-use syn::{Data, DeriveInput, GenericArgument, Type};
+use syn::{Data, DeriveInput};
 
-pub struct BuidlerField<'a> {
-    ident: &'a Ident,
-    ty: &'a Type,
-    new: bool,
-    is_str: bool,
-}
+use crate::fields::get_fields;
 
 pub(crate) fn builder_inner(input: DeriveInput) -> Result<TokenStream, syn::Error> {
     let Data::Struct(struct_data) = input.data else {
@@ -16,80 +11,7 @@ pub(crate) fn builder_inner(input: DeriveInput) -> Result<TokenStream, syn::Erro
     };
     let struct_ident = input.ident;
     let struct_vis = input.vis;
-    let mut methods = Vec::new();
-    let mut fields = Vec::new();
-    for field in &struct_data.fields {
-        let Some(field_ident) = &field.ident else {
-            panic!("field ident not found")
-        };
-        let Type::Path(field_ty) = &field.ty else {
-            panic!("current only support path type")
-        };
-        let Some(segment) = &field_ty.path.segments.last() else {
-            panic!("get last segment failed")
-        };
-        match &segment.arguments {
-            syn::PathArguments::None => {
-                if segment.ident == "String" {
-                    fields.push(BuidlerField {
-                        ident: field_ident,
-                        ty: &field.ty,
-                        new: true,
-                        is_str: true,
-                    });
-                } else {
-                    fields.push(BuidlerField {
-                        ident: field_ident,
-                        ty: &field.ty,
-                        new: true,
-                        is_str: false,
-                    });
-                }
-            }
-            syn::PathArguments::AngleBracketed(args) => {
-                fields.push(BuidlerField {
-                    ident: field_ident,
-                    ty: &field.ty,
-                    new: false,
-                    is_str: false,
-                });
-                for arg in &args.args {
-                    // <String>
-                    let GenericArgument::Type(ty) = arg else {
-                        continue;
-                    };
-                    let Type::Path(ty_path) = &ty else {
-                        continue;
-                    };
-                    if segment.ident == "Option" {
-                        if ty_path.path.is_ident("String") {
-                            methods.push(quote! {
-                                #struct_vis fn #field_ident(mut self, #field_ident: &str) -> Self {
-                                    self.#field_ident = Some(#field_ident.to_owned());
-                                    self
-                                }
-                            });
-                        } else {
-                            methods.push(quote! {
-                               #struct_vis fn #field_ident(mut self, #field_ident: #ty) -> Self {
-                                    self.#field_ident = Some(#field_ident);
-                                    self
-                                }
-                            });
-                        }
-                    } else {
-                        methods.push(quote! {
-                            #struct_vis fn #field_ident(mut self, #field_ident: #field_ty) -> Self {
-                                self.#field_ident = #field_ident;
-                                self
-                            }
-                        });
-                    }
-                }
-            }
-            syn::PathArguments::Parenthesized(_) => panic!("unsupport parenthesized field type"),
-        }
-    }
+    let fields = get_fields(&struct_data.fields);
     let builder_ident = syn::Ident::new(&format!("{struct_ident}Builder"), Span::call_site());
     let field_init = fields.iter().map(|f| {
         let fident = f.ident;
@@ -104,7 +26,7 @@ pub(crate) fn builder_inner(input: DeriveInput) -> Result<TokenStream, syn::Erro
              #field_ident: self.#field_ident
         }
     });
-    let new_fn_args = fields.iter().filter(|f| f.new).map(|f| {
+    let new_fn_args = fields.iter().filter(|f| !f.is_option).map(|f| {
         let fident = f.ident;
         let ftype = f.ty;
         if f.is_str {
@@ -119,17 +41,38 @@ pub(crate) fn builder_inner(input: DeriveInput) -> Result<TokenStream, syn::Erro
     });
     let new_init_args = fields.iter().map(|f| {
         let fident = f.ident;
-        if f.new && f.is_str {
+        if !f.is_option && f.is_str {
             quote! {
                 #fident: #fident.to_owned()
             }
-        } else if f.new {
+        } else if !f.is_option {
             quote! {
                 #fident
             }
         } else {
             quote! {
                 #fident: Default::default()
+            }
+        }
+    });
+    let methods = fields.iter().filter(|f| f.is_option).map(|f| {
+        let fident = f.ident;
+        let Some(inner_ty) = f.inner_ty else {
+            return quote!();
+        };
+        if f.is_str {
+            quote! {
+                #struct_vis fn #fident(mut self, #fident: &str) -> Self {
+                    self.#fident = Some(#fident.to_owned());
+                    self
+                }
+            }
+        } else {
+            quote! {
+                #struct_vis fn #fident(mut self, #fident: #inner_ty) -> Self {
+                    self.#fident = Some(#fident);
+                    self
+                }
             }
         }
     });

@@ -2,7 +2,13 @@ use std::sync::Arc;
 
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::methods::{answer_callback_query::AnswerCallbackQuery, send_message::SendMessage};
+use crate::{
+    methods::{
+        answer_callback_query::AnswerCallbackQuery, send_message::SendMessage,
+        send_photo::SendPhoto,
+    },
+    types::{message::Message, PhotoSize},
+};
 
 type Result<T, E = Error> = std::result::Result<T, E>;
 
@@ -12,6 +18,21 @@ pub enum Error {
     Request(#[from] reqwest::Error),
     #[error("Response error: {0}")]
     Response(String),
+    #[error("I/O error: {0}")]
+    Io(String),
+}
+
+#[derive(serde::Deserialize)]
+#[serde(untagged)]
+pub enum TgResponse<T> {
+    Ok(OkResponse<T>),
+    Err(ErrResponse),
+}
+
+#[derive(serde::Deserialize)]
+pub struct OkResponse<T> {
+    ok: bool,
+    result: T,
 }
 
 #[derive(serde::Deserialize)]
@@ -39,13 +60,17 @@ impl Client {
         T: Serialize,
     {
         let url = format!("{}/{method}", self.tg_url);
-        let resp = self.client.post(url).json(&body).send().await?;
-        let status = resp.status();
+        let raw_resp = self.client.post(url).json(&body).send().await?;
+        let status = raw_resp.status();
         if !status.is_success() {
-            let err_resp = resp.json::<ErrResponse>().await?;
+            let ErrResponse {
+                error_code,
+                description,
+                ..
+            } = raw_resp.json::<ErrResponse>().await?;
             return Err(Error::Response(format!(
-                "tg response error: {} {}",
-                err_resp.error_code, err_resp.description
+                "status: {}: {} {}",
+                status, error_code, description
             )));
         }
         Ok(())
@@ -57,16 +82,27 @@ impl Client {
         R: DeserializeOwned,
     {
         let url = format!("{}/{method}", self.tg_url);
-        let resp = self.client.post(url).json(&body).send().await?;
+        let raw_resp = self.client.post(url).json(&body).send().await?;
+        self.get_response(raw_resp).await
+    }
+
+    async fn get_response<R>(&self, resp: reqwest::Response) -> Result<R, Error>
+    where
+        R: DeserializeOwned,
+    {
         let status = resp.status();
-        if !status.is_success() {
-            let err_resp = resp.json::<ErrResponse>().await?;
-            return Err(Error::Response(format!(
-                "tg response error: {} {}",
-                err_resp.error_code, err_resp.description
-            )));
+        let resp = resp.json::<TgResponse<R>>().await?;
+        match resp {
+            TgResponse::Ok(OkResponse { result, .. }) => Ok(result),
+            TgResponse::Err(ErrResponse {
+                error_code,
+                description,
+                ..
+            }) => Err(Error::Response(format!(
+                "status: {}: {} {}",
+                status, error_code, description
+            ))),
         }
-        Ok(resp.json().await?)
     }
 
     pub async fn send_message(&self, message: SendMessage) -> Result<()> {
@@ -75,5 +111,18 @@ impl Client {
 
     pub async fn answer_callback_query(&self, message: AnswerCallbackQuery) -> Result<()> {
         self.send_ok("answerCallbackQuery", message).await
+    }
+
+    pub async fn send_photo(&self, photo: SendPhoto) -> Result<Vec<PhotoSize>> {
+        let url = format!("{}/sendPhoto", self.tg_url);
+        let mut req_builder = self.client.post(url);
+        if photo.is_multipart() {
+            req_builder = req_builder.multipart(photo.try_into().unwrap());
+        } else {
+            req_builder = req_builder.json(&photo);
+        }
+        let resp = req_builder.send().await?;
+        let message = self.get_response::<Message>(resp).await?;
+        Ok(message.photo.unwrap_or_default())
     }
 }

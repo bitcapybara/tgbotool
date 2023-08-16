@@ -3,13 +3,10 @@ use clap::Parser;
 use tgbotool::{
     client::Client,
     methods::{
-        answer_callback_query::AnswerCallbackQueryBuilder, send_message::SendMessageBuilder,
-        ChatId, ReplyMarkup,
+        answer_callback_query::AnswerCallbackQueryBuilder, send_photo::SendPhotoBuilder, ChatId,
+        SendFile,
     },
-    types::{
-        update::{Update, UpdateType},
-        InlineKeyboardButtonBuilder,
-    },
+    types::update::{Update, UpdateType},
     BotCommand,
 };
 
@@ -54,20 +51,16 @@ pub enum Cuckoo {
 async fn process_webhook(State(client): State<Client>, Json(update): Json<Update>) {
     match &update.update_type {
         UpdateType::Message(msg) => {
-            let Some(text) = &msg.text else { return };
+            let Some(_text) = &msg.text else { return };
             let chat_id = ChatId::Chat(msg.chat.id);
-            let send_message = SendMessageBuilder::new(chat_id, text)
-                .reply_markup(ReplyMarkup::inline_keyboard(vec![vec![
-                    InlineKeyboardButtonBuilder::new("取消")
-                        .callback_data("cancel")
-                        .build(),
-                    InlineKeyboardButtonBuilder::new("确定")
-                        .callback_data("ok")
-                        .build(),
-                ]]))
+            let send_file = SendFile::file_id_or_url(
+                "AgACAgUAAxkDAANNZNxAxTaHn7g_YEbJR1qg8t54TEUAAo61MRuDK-hW_Cn_fSdb_YIBAAMCAAN4AAMwBA"
+            );
+            let photo = SendPhotoBuilder::new(chat_id, send_file)
+                .caption("send file #abc")
                 .build();
-            if let Err(e) = client.send_message(send_message).await {
-                println!("send_message error: {e}");
+            if let Err(e) = client.send_photo(photo).await {
+                println!("send photo error: {e}")
             }
         }
         UpdateType::EditedMessage(_) => todo!(),
