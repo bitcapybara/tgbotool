@@ -6,7 +6,7 @@ use super::{ChatId, ReplyMarkup, SendFile};
 
 #[skip_serializing_none]
 #[derive(serde::Serialize, tgbotool_derive::Builder, tgbotool_derive::Multipart)]
-#[multipart(field = "photo", converter = into_part)]
+#[multipart(field = "photo")]
 pub struct SendPhoto {
     chat_id: ChatId,
     message_thread_id: Option<u64>,

@@ -2,6 +2,7 @@ mod builder;
 mod command;
 mod fields;
 mod multipart;
+mod parser;
 
 use builder::builder_inner;
 use command::bot_command_inner;

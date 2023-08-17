@@ -7,7 +7,6 @@ use tgbotool::{
         SendFile,
     },
     types::update::{Update, UpdateType},
-    BotCommand,
 };
 
 #[derive(clap::Parser)]
@@ -33,18 +32,6 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .unwrap();
-}
-
-#[derive(Debug, BotCommand)]
-#[command(bot_name = "yx_cuckoo_bot", rename_rule = "snake_case")]
-pub enum Cuckoo {
-    #[command(rename = "/help")]
-    Help,
-    Username(String, u8),
-    UsernameAndAge {
-        username: String,
-        age: u8,
-    },
 }
 
 #[debug_handler]

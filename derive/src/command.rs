@@ -2,9 +2,10 @@ use core::panic;
 
 use heck::{ToLowerCamelCase, ToPascalCase, ToSnekCase};
 use proc_macro::TokenStream;
-use proc_macro2::Ident;
 use quote::quote;
-use syn::{parse::ParseStream, Data, DeriveInput, Lit, Token};
+use syn::{parse::ParseStream, Data, DeriveInput, Token};
+
+use crate::parser::parse_lit_str;
 
 pub(crate) fn bot_command_inner(input: DeriveInput) -> Result<TokenStream, syn::Error> {
     let Data::Enum(data_enum) = input.data else {
@@ -18,12 +19,13 @@ pub(crate) fn bot_command_inner(input: DeriveInput) -> Result<TokenStream, syn::
             continue;
         }
         // #[command(bot_name = "", rename_rule = "")]
-        let attrs = enum_attr
-            .parse_args_with(|input: ParseStream| input.parse_terminated(parse_lit, Token![,]))?;
+        let attrs = enum_attr.parse_args_with(|input: ParseStream| {
+            input.parse_terminated(parse_lit_str, Token![,])
+        })?;
         for (key, value) in attrs {
             match key.to_string().as_str() {
-                "bot_name" => command_enum.bot_name = Some(value),
-                "rename_rule" => command_enum.rename_rule = Some(value),
+                "bot_name" => command_enum.bot_name = Some(value.value()),
+                "rename_rule" => command_enum.rename_rule = Some(value.value()),
                 k => panic!("unsupport attr: {k}"),
             }
         }
@@ -45,11 +47,11 @@ pub(crate) fn bot_command_inner(input: DeriveInput) -> Result<TokenStream, syn::
             }
             // #[command(rename = "")]
             let attrs = var_attr.parse_args_with(|input: ParseStream| {
-                input.parse_terminated(parse_lit, Token![,])
+                input.parse_terminated(parse_lit_str, Token![,])
             })?;
             for (key, value) in attrs {
                 match key.to_string().as_str() {
-                    "rename" => command_variant.rename = Some(value),
+                    "rename" => command_variant.rename = Some(value.value()),
                     k => panic!("unsupport attr: {k}"),
                 }
             }
@@ -144,13 +146,4 @@ fn case_conv(origin: &str, rename_rule: Option<&str>) -> String {
         Some(_) => panic!("unsupported rename rule"),
         None => origin.to_owned(),
     }
-}
-
-pub fn parse_lit(input: ParseStream) -> Result<(Ident, String), syn::Error> {
-    let key = input.parse::<Ident>()?;
-    input.parse::<Token![=]>()?;
-    let Lit::Str(s) = input.parse::<Lit>()? else {
-        panic!("expected string attr value");
-    };
-    Ok((key, s.value()))
 }
