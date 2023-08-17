@@ -7,6 +7,7 @@ use crate::types::{
 };
 
 pub mod answer_callback_query;
+pub mod get_file;
 pub mod get_updates;
 pub mod send_message;
 pub mod send_photo;

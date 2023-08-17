@@ -210,6 +210,7 @@ pub struct Sticker {
     pub file_size: Option<u64>,
 }
 
+#[skip_serializing_none]
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct File {
     pub file_id: String,

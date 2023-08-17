@@ -4,10 +4,10 @@ use serde::{de::DeserializeOwned, Serialize};
 
 use crate::{
     methods::{
-        answer_callback_query::AnswerCallbackQuery, get_updates::GetUpdates,
+        answer_callback_query::AnswerCallbackQuery, get_file::GetFile, get_updates::GetUpdates,
         send_message::SendMessage, send_photo::SendPhoto,
     },
-    types::{message::Message, update::Update, PhotoSize},
+    types::{message::Message, update::Update, File, PhotoSize},
 };
 
 type Result<T, E = Error> = std::result::Result<T, E>;
@@ -45,6 +45,7 @@ pub struct ErrResponse {
 #[derive(Clone)]
 pub struct Client {
     tg_url: String,
+    bot_token: String,
     client: Arc<reqwest::Client>,
 }
 
@@ -53,6 +54,7 @@ impl Client {
         Self {
             tg_url: format!("https://api.telegram.org/bot{bot_token}"),
             client: Arc::new(reqwest::Client::new()),
+            bot_token: bot_token.to_owned(),
         }
     }
     pub(crate) async fn send_ok<T>(&self, method: &str, body: T) -> Result<(), Error>
@@ -128,5 +130,23 @@ impl Client {
 
     pub async fn get_updates(&self, body: GetUpdates) -> Result<Vec<Update>> {
         self.send("getUpdates", body).await
+    }
+
+    pub async fn get_file(&self, body: GetFile) -> Result<Option<Vec<u8>>> {
+        let file: File = self.send("getFile", body).await?;
+        let Some(file_path) = file.file_path else {
+            return Ok(None);
+        };
+        let download_url = format!(
+            "https://api.telegram.org/file/bot{}/{}",
+            self.bot_token, file_path
+        );
+        let resp = self.client.get(download_url).send().await?;
+        let status = resp.status();
+        if !status.is_success() {
+            return Err(Error::Response(format!("download file error: {}", status)));
+        }
+
+        Ok(Some(resp.bytes().await?.to_vec()))
     }
 }
