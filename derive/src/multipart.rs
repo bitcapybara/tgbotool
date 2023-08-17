@@ -26,7 +26,7 @@ pub(crate) fn multipart_inner(input: DeriveInput) -> Result<TokenStream, syn::Er
         }
         multi_attr.field = Some(kv.1.value());
     }
-    let fields = get_fields(&struct_data.fields);
+    let fields = get_fields(&struct_data.fields)?;
     let methods = fields.iter().map(|f| {
         let fident = f.ident;
         let fident_str = fident.to_string();

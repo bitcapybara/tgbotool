@@ -16,7 +16,7 @@ pub fn bot_command(token_stream: TokenStream) -> TokenStream {
     bot_command_inner(input).unwrap()
 }
 
-#[proc_macro_derive(Builder)]
+#[proc_macro_derive(Builder, attributes(builder))]
 pub fn builder(token_stream: TokenStream) -> TokenStream {
     let input: DeriveInput = parse_macro_input!(token_stream);
     builder_inner(input).unwrap()

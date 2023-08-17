@@ -40,6 +40,7 @@ async fn process_webhook(State(client): State<Client>, Json(update): Json<Update
         UpdateType::Message(msg) => {
             let Some(_text) = &msg.text else { return };
             let chat_id = ChatId::Chat(msg.chat.id);
+            println!("{}", msg.chat.id);
             let send_file = SendFile::file_id_or_url(
                 "AgACAgUAAxkDAANNZNxAxTaHn7g_YEbJR1qg8t54TEUAAo61MRuDK-hW_Cn_fSdb_YIBAAMCAAN4AAMwBA"
             );

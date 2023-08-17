@@ -11,7 +11,7 @@ pub(crate) fn builder_inner(input: DeriveInput) -> Result<TokenStream, syn::Erro
     };
     let struct_ident = input.ident;
     let struct_vis = input.vis;
-    let fields = get_fields(&struct_data.fields);
+    let fields = get_fields(&struct_data.fields)?;
     let builder_ident = syn::Ident::new(&format!("{struct_ident}Builder"), Span::call_site());
     let field_init = fields.iter().map(|f| {
         let fident = f.ident;
@@ -26,24 +26,32 @@ pub(crate) fn builder_inner(input: DeriveInput) -> Result<TokenStream, syn::Erro
              #field_ident: self.#field_ident
         }
     });
-    let new_fn_args = fields.iter().filter(|f| !f.is_option).map(|f| {
-        let fident = f.ident;
-        let ftype = f.ty;
-        if f.is_str {
-            quote! {
-                #fident: &str
+    let new_fn_args = fields
+        .iter()
+        .filter(|f| !f.is_option && f.build_value.is_none())
+        .map(|f| {
+            let fident = f.ident;
+            let ftype = f.ty;
+            if f.is_str {
+                quote! {
+                    #fident: &str
+                }
+            } else {
+                quote! {
+                    #fident: #ftype
+                }
             }
-        } else {
-            quote! {
-                #fident: #ftype
-            }
-        }
-    });
+        });
     let new_init_args = fields.iter().map(|f| {
         let fident = f.ident;
         if !f.is_option && f.is_str {
-            quote! {
-                #fident: #fident.to_owned()
+            match &f.build_value {
+                Some(value) => quote! {
+                    #fident: #value.to_owned()
+                },
+                None => quote! {
+                    #fident: #fident.to_owned()
+                },
             }
         } else if !f.is_option {
             quote! {

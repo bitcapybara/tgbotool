@@ -5,7 +5,7 @@ use serde::{de::DeserializeOwned, Serialize};
 use crate::{
     methods::{
         answer_callback_query::AnswerCallbackQuery, get_file::GetFile, get_updates::GetUpdates,
-        send_message::SendMessage, send_photo::SendPhoto,
+        send_media_group::SendMediaGroup, send_message::SendMessage, send_photo::SendPhoto,
     },
     types::{message::Message, update::Update, File, PhotoSize},
 };
@@ -15,11 +15,23 @@ type Result<T, E = Error> = std::result::Result<T, E>;
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("Request error: {0}")]
-    Request(#[from] reqwest::Error),
+    Request(String),
     #[error("Response error: {0}")]
     Response(String),
     #[error("I/O error: {0}")]
     Io(String),
+}
+
+impl From<reqwest::Error> for Error {
+    fn from(value: reqwest::Error) -> Self {
+        Self::Request(value.to_string())
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(value: serde_json::Error) -> Self {
+        Self::Request(value.to_string())
+    }
 }
 
 #[derive(serde::Deserialize)]
@@ -119,7 +131,7 @@ impl Client {
         let url = format!("{}/sendPhoto", self.tg_url);
         let mut req_builder = self.client.post(url);
         if photo.is_multipart() {
-            req_builder = req_builder.multipart(photo.try_into().unwrap());
+            req_builder = req_builder.multipart(photo.try_into()?);
         } else {
             req_builder = req_builder.json(&photo);
         }
@@ -148,5 +160,29 @@ impl Client {
         }
 
         Ok(Some(resp.bytes().await?.to_vec()))
+    }
+
+    pub async fn send_media_group(&self, group: SendMediaGroup) -> Result<()> {
+        let url = format!("{}/sendMediaGroup", self.tg_url);
+        let mut req_builder = self.client.post(url);
+        if group.is_multipart() {
+            req_builder = req_builder.multipart(group.try_into()?);
+        } else {
+            req_builder = req_builder.json(&group);
+        }
+        let resp = req_builder.send().await?;
+        let status = resp.status();
+        if !status.is_success() {
+            let ErrResponse {
+                error_code,
+                description,
+                ..
+            } = resp.json::<ErrResponse>().await?;
+            return Err(Error::Response(format!(
+                "status: {}: {} {}",
+                status, error_code, description
+            )));
+        }
+        Ok(())
     }
 }
