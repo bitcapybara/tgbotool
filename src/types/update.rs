@@ -1,3 +1,5 @@
+use serde_with::skip_serializing_none;
+
 use crate::command::{self, BotCommand};
 
 use super::{
@@ -7,14 +9,15 @@ use super::{
     PollAnswer,
 };
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Update {
     pub update_id: u64,
     #[serde(flatten)]
     pub update_type: UpdateType,
 }
 
-#[derive(serde::Deserialize)]
+#[skip_serializing_none]
+#[derive(serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum UpdateType {
     Message(Message),

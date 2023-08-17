@@ -14,7 +14,7 @@ pub mod payment;
 pub mod update;
 pub mod user;
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct InlineQuery {
     pub id: String,
     pub from: User,
@@ -24,7 +24,7 @@ pub struct InlineQuery {
     pub location: Option<Location>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct ChosenInlineResult {
     pub result_id: String,
     pub from: User,
@@ -33,7 +33,7 @@ pub struct ChosenInlineResult {
     pub query: String,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct CallbackQuery {
     pub id: String,
     pub from: User,
@@ -44,14 +44,14 @@ pub struct CallbackQuery {
     pub game_short_name: Option<String>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct PollAnswer {
     pub poll_id: String,
     pub user: User,
     pub optins_ids: Vec<usize>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct ChatMemberUpdated {
     pub chat: Chat,
     pub from: User,
@@ -62,7 +62,7 @@ pub struct ChatMemberUpdated {
     pub via_chat_folder_invite_link: Option<bool>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct ChatJoinRequest {
     pub chat: Chat,
     pub from: User,
@@ -72,7 +72,7 @@ pub struct ChatJoinRequest {
     pub invite_link: Option<ChatInviteLink>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub enum ChatMember {
     Owner {
         status: String,
@@ -132,7 +132,7 @@ pub enum ChatMember {
     },
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct ChatInviteLink {
     pub invite_link: String,
     pub creator: User,
@@ -145,7 +145,7 @@ pub struct ChatInviteLink {
     pub pending_join_reqeust_count: Option<usize>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Animation {
     pub file_id: String,
     pub file_unique_id: String,
@@ -158,7 +158,7 @@ pub struct Animation {
     pub file_size: Option<u64>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Audio {
     pub file_id: String,
     pub file_unique_id: String,
@@ -171,7 +171,7 @@ pub struct Audio {
     pub thumbnail: Option<PhotoSize>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Document {
     pub file_id: String,
     pub file_unique_id: String,
@@ -181,7 +181,7 @@ pub struct Document {
     pub file_size: Option<u64>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct PhotoSize {
     pub file_id: String,
     pub file_unique_id: String,
@@ -190,7 +190,7 @@ pub struct PhotoSize {
     pub file_size: Option<u64>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Sticker {
     pub file_id: String,
     pub file_unique_id: String,
@@ -210,7 +210,7 @@ pub struct Sticker {
     pub file_size: Option<u64>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct File {
     pub file_id: String,
     pub file_unique_id: String,
@@ -218,7 +218,7 @@ pub struct File {
     pub file_path: Option<String>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct MaskPosition {
     pub point: String,
     pub x_shift: f64,
@@ -226,7 +226,7 @@ pub struct MaskPosition {
     pub scale: f64,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum StickerType {
     Regular,
@@ -234,7 +234,7 @@ pub enum StickerType {
     CustomEmoji,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Video {
     pub file_id: String,
     pub file_unique_id: String,
@@ -246,7 +246,7 @@ pub struct Video {
     pub file_size: Option<u64>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct VideoNote {
     pub file_id: String,
     pub file_unique_id: String,
@@ -256,7 +256,7 @@ pub struct VideoNote {
     pub file_size: Option<u64>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Voice {
     pub file_id: String,
     pub file_unique_id: String,
@@ -265,7 +265,7 @@ pub struct Voice {
     pub file_size: Option<usize>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Contact {
     pub phone_number: String,
     pub first_name: String,
@@ -274,13 +274,13 @@ pub struct Contact {
     pub vcard: Option<String>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Dice {
     pub emoji: String,
     pub value: usize,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Poll {
     pub id: String,
     pub question: String,
@@ -298,13 +298,13 @@ pub struct Poll {
     pub close_date: Option<usize>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct PollOption {
     pub text: Option<String>,
     pub voter_count: usize,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Venue {
     pub location: Location,
     pub title: String,
@@ -315,7 +315,7 @@ pub struct Venue {
     pub google_place_type: Option<String>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Location {
     pub longitude: f64,
     pub latitude: f64,
@@ -325,79 +325,79 @@ pub struct Location {
     pub proximity_alert_radius: Option<usize>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct MessageAutoDeleteTimerChanged {
     pub message_auto_delete_time: usize,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct UserShared {
     pub request_id: u64,
     pub user_id: u64,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct ChatShared {
     pub request_id: u64,
     pub chat_id: u64,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct WriteAccessAllowed {
     pub web_app_name: Option<String>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct ProximityAlertTriggered {
     pub traveler: User,
     pub watcher: User,
     pub distance: usize,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct ForumTopicCreated {
     pub name: String,
     pub icon_color: usize,
     pub icon_custom_emoji_id: Option<String>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct ForumTopicEdited {
     pub name: Option<String>,
     pub icon_custom_emoji_id: Option<String>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct ForumTopicClosed {}
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct ForumTopicReopened {}
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct GeneralForumTopicHidden {}
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct GeneralForumTopicUnHidden {}
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct VideoChatScheduled {
     pub start_date: u64,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct VideoChatStarted {}
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct VideoChatEnded {
     pub duration: u64,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct VideoChatParticipantsInvited {
     pub users: Vec<User>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct WebAppData {
     pub data: String,
     pub button_text: String,

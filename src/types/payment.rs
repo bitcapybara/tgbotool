@@ -1,6 +1,6 @@
 use super::user::User;
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct OrderInfo {
     pub name: Option<String>,
     pub phone_number: Option<String>,
@@ -8,7 +8,7 @@ pub struct OrderInfo {
     pub shipping_address: Option<ShippingAddress>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct ShippingAddress {
     pub country_code: String,
     pub state: String,
@@ -18,7 +18,7 @@ pub struct ShippingAddress {
     pub post_code: String,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Invoice {
     pub title: String,
     pub description: String,
@@ -27,7 +27,7 @@ pub struct Invoice {
     pub otal_amount: usize,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct ShippingQuery {
     pub id: String,
     pub from: User,
@@ -35,7 +35,7 @@ pub struct ShippingQuery {
     pub shipping_address: ShippingAddress,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct SuccessfulPayment {
     pub currency: String,
     pub total_amount: usize,
@@ -46,20 +46,20 @@ pub struct SuccessfulPayment {
     pub provider_payment_charge_id: String,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct LabeledPrice {
     pub label: String,
     pub amount: usize,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct ShippingOption {
     pub id: String,
     pub title: String,
     pub prices: Vec<LabeledPrice>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct PreCheckoutQuery {
     pub id: String,
     pub from: User,

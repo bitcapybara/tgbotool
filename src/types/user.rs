@@ -1,4 +1,7 @@
+use serde_with::skip_serializing_none;
+
 /// This object represents a Telegram user or bot
+#[skip_serializing_none]
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
 pub struct User {
     /// Unique identifier for this user or bot
@@ -14,11 +17,9 @@ pub struct User {
     /// Optional. IETF language tag of the user's language
     pub language_code: Option<String>,
     /// Optional. True, if this user is a Telegram Premium user
-    #[serde(default)]
-    pub is_premium: bool,
+    pub is_premium: Option<bool>,
     /// Optional. True, if this user added the bot to the attachment menu
-    #[serde(default)]
-    pub added_to_attachment_menu: bool,
+    pub added_to_attachment_menu: Option<bool>,
     /// Optional. True, if the bot can be invited to groups. Returned only in `getMe`.
     pub can_join_groups: Option<bool>,
     /// Optional. True, if privacy mode is disabled for the bot. Returned only in `getMe`.

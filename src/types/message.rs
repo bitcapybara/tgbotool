@@ -1,3 +1,5 @@
+use serde_with::skip_serializing_none;
+
 use super::{
     chat::Chat,
     game::Game,
@@ -11,7 +13,8 @@ use super::{
     WebAppData, WriteAccessAllowed,
 };
 
-#[derive(serde::Deserialize)]
+#[skip_serializing_none]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Message {
     pub message_id: u64,
     pub message_thread_id: Option<u64>,
@@ -56,14 +59,10 @@ pub struct Message {
     pub left_chat_member: Option<User>,
     pub new_chat_title: Option<String>,
     pub new_chat_photo: Option<PhotoSize>,
-    #[serde(default)]
-    pub delete_chat_photo: bool,
-    #[serde(default)]
-    pub group_chat_created: bool,
-    #[serde(default)]
-    pub supergroup_chat_created: bool,
-    #[serde(default)]
-    pub channel_chat_created: bool,
+    pub delete_chat_photo: Option<bool>,
+    pub group_chat_created: Option<bool>,
+    pub supergroup_chat_created: Option<bool>,
+    pub channel_chat_created: Option<bool>,
     pub message_auto_delete_timer_changed: Option<MessageAutoDeleteTimerChanged>,
     pub migrate_to_chat_id: Option<u64>,
     pub migrate_from_chat_id: Option<u64>,

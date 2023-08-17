@@ -1,7 +1,10 @@
+use serde_with::skip_serializing_none;
+
 use super::message::Message;
 
 /// This object represents a chat.
-#[derive(serde::Deserialize)]
+#[skip_serializing_none]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Chat {
     ///
     pub id: u64,
@@ -21,7 +24,8 @@ pub struct Chat {
     pub chat_type: ChatType,
 }
 
-#[derive(serde::Deserialize)]
+#[skip_serializing_none]
+#[derive(serde::Serialize, serde::Deserialize)]
 #[serde(tag = "type")]
 #[serde(rename_all = "snake_case")]
 pub enum ChatType {
@@ -32,10 +36,8 @@ pub enum ChatType {
         active_usernames: Option<Vec<String>>,
         emoji_status_custom_emoji_id: Option<String>,
         bio: Option<String>,
-        #[serde(default)]
-        has_private_forwards: bool,
-        #[serde(default)]
-        has_restricted_voice_and_video_messages: bool,
+        has_private_forwards: Option<bool>,
+        has_restricted_voice_and_video_messages: Option<bool>,
     },
     Group {
         title: String,
@@ -46,13 +48,10 @@ pub enum ChatType {
     Supergroup {
         title: String,
         username: Option<String>,
-        #[serde(default)]
-        is_forum: bool,
+        is_forum: Option<bool>,
         active_usernames: Option<Vec<String>>,
-        #[serde(default)]
-        join_to_send_messages: bool,
-        #[serde(default)]
-        join_by_request: bool,
+        join_to_send_messages: Option<bool>,
+        join_by_request: Option<bool>,
         description: Option<String>,
         invite_link: Option<String>,
         permissions: Option<ChatPermissions>,
@@ -73,7 +72,7 @@ pub enum ChatType {
     },
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct ChatPhoto {
     pub small_file_id: String,
     pub small_file_unique_id: String,
@@ -81,37 +80,24 @@ pub struct ChatPhoto {
     pub big_file_unique_id: String,
 }
 
-#[derive(serde::Deserialize)]
+#[skip_serializing_none]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct ChatPermissions {
-    #[serde(default)]
-    pub can_send_messages: bool,
-    #[serde(default)]
-    pub can_send_audios: bool,
-    #[serde(default)]
-    pub can_send_documents: bool,
-    #[serde(default)]
-    pub can_send_photos: bool,
-    #[serde(default)]
-    pub can_send_videos: bool,
-    #[serde(default)]
-    pub can_send_videos_notes: bool,
-    #[serde(default)]
-    pub can_send_voice_notes: bool,
-    #[serde(default)]
-    pub can_send_polls: bool,
-    #[serde(default)]
-    pub can_send_other_messages: bool,
-    #[serde(default)]
-    pub can_add_web_page_previews: bool,
-    #[serde(default)]
-    pub can_change_info: bool,
-    #[serde(default)]
-    pub can_invite_users: bool,
-    #[serde(default)]
-    pub can_pin_messages: bool,
-    #[serde(default)]
-    pub can_manage_topics: bool,
+    pub can_send_messages: Option<bool>,
+    pub can_send_audios: Option<bool>,
+    pub can_send_documents: Option<bool>,
+    pub can_send_photos: Option<bool>,
+    pub can_send_videos: Option<bool>,
+    pub can_send_videos_notes: Option<bool>,
+    pub can_send_voice_notes: Option<bool>,
+    pub can_send_polls: Option<bool>,
+    pub can_send_other_messages: Option<bool>,
+    pub can_add_web_page_previews: Option<bool>,
+    pub can_change_info: Option<bool>,
+    pub can_invite_users: Option<bool>,
+    pub can_pin_messages: Option<bool>,
+    pub can_manage_topics: Option<bool>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct ChatLocation {}

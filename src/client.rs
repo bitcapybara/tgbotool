@@ -4,10 +4,10 @@ use serde::{de::DeserializeOwned, Serialize};
 
 use crate::{
     methods::{
-        answer_callback_query::AnswerCallbackQuery, send_message::SendMessage,
-        send_photo::SendPhoto,
+        answer_callback_query::AnswerCallbackQuery, get_updates::GetUpdates,
+        send_message::SendMessage, send_photo::SendPhoto,
     },
-    types::{message::Message, PhotoSize},
+    types::{message::Message, update::Update, PhotoSize},
 };
 
 type Result<T, E = Error> = std::result::Result<T, E>;
@@ -124,5 +124,9 @@ impl Client {
         let resp = req_builder.send().await?;
         let message = self.get_response::<Message>(resp).await?;
         Ok(message.photo.unwrap_or_default())
+    }
+
+    pub async fn get_updates(&self, body: GetUpdates) -> Result<Vec<Update>> {
+        self.send("getUpdates", body).await
     }
 }
