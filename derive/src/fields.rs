@@ -1,7 +1,8 @@
-use proc_macro2::Ident;
-use syn::{Fields, GenericArgument, Type};
+use syn::{
+    punctuated::Punctuated, Expr, ExprLit, Fields, GenericArgument, Ident, Lit, Meta, Token, Type,
+};
 
-use crate::parser::parse_lit_str;
+use crate::multipart::MultipartType;
 
 pub(crate) struct TgField<'a> {
     pub(crate) ident: &'a Ident,
@@ -10,6 +11,9 @@ pub(crate) struct TgField<'a> {
     pub(crate) is_option: bool,
     pub(crate) inner_ty: Option<&'a Type>,
     pub(crate) build_value: Option<String>,
+    pub(crate) build_skip: bool,
+    pub(crate) multipart: Option<MultipartType>,
+    pub(crate) is_vec: bool,
 }
 
 impl<'a> TgField<'a> {
@@ -17,9 +21,24 @@ impl<'a> TgField<'a> {
         self.inner_ty = Some(ty);
         self
     }
+
+    fn vec(mut self) -> Self {
+        self.is_vec = true;
+        self
+    }
+
+    fn option(mut self) -> Self {
+        self.is_option = true;
+        self
+    }
+
+    fn str(mut self) -> Self {
+        self.is_str = true;
+        self
+    }
 }
 
-pub(crate) fn get_fields(struct_fields: &Fields) -> Result<Vec<TgField<'_>>, syn::Error> {
+pub(crate) fn get_fields(struct_fields: &Fields) -> Vec<TgField<'_>> {
     let mut fields = Vec::new();
     for field in struct_fields {
         let Some(field_ident) = &field.ident else {
@@ -30,57 +49,97 @@ pub(crate) fn get_fields(struct_fields: &Fields) -> Result<Vec<TgField<'_>>, syn
             panic!("current only support path type")
         };
         let mut build_value = None;
+        let mut build_skip = false;
+        let mut multipart = None;
         for attr in &field.attrs {
-            if !attr.path().is_ident("builder") {
+            // ignore #[doc("...")]
+            if attr.path().is_ident("doc") {
                 continue;
             }
-            let (ident, value) = attr.parse_args_with(parse_lit_str)?;
-            if ident != "value" {
-                panic!("builder need value key")
+
+            let metas = attr
+                .parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)
+                .unwrap();
+            for meta in metas {
+                match meta {
+                    Meta::Path(path) => {
+                        if attr.path().is_ident("builder") && path.is_ident("skip") {
+                            build_skip = true;
+                            continue;
+                        }
+                        if attr.path().is_ident("multipart") {
+                            if path.is_ident("normal") {
+                                multipart = Some(MultipartType::Normal);
+                            } else if path.is_ident("attach") {
+                                multipart = Some(MultipartType::Attach);
+                            } else {
+                                panic!("unsupported multipart attr")
+                            }
+                            continue;
+                        }
+                    }
+                    Meta::NameValue(kv) => {
+                        if attr.path().is_ident("builder") && kv.path.is_ident("value") {
+                            let Expr::Lit(ExprLit {
+                                lit: Lit::Str(s), ..
+                            }) = kv.value
+                            else {
+                                panic!("unsupported builder attr")
+                            };
+                            build_value = Some(s.value());
+                        }
+                    }
+                    Meta::List(_) => panic!("meta list unsupported"),
+                }
             }
-            build_value = Some(value.value());
         }
         let Some(segment) = &field_ty_path.path.segments.last() else {
             panic!("get last segment failed")
         };
-        let tg_field = |is_option: bool, is_str: bool| -> TgField {
-            TgField {
-                ident: field_ident,
-                ty: field_ty,
-                is_str,
-                is_option,
-                inner_ty: None,
-                build_value,
-            }
+        let mut tg_field = TgField {
+            ident: field_ident,
+            ty: field_ty,
+            is_str: false,
+            is_option: false,
+            inner_ty: None,
+            build_value,
+            build_skip,
+            multipart,
+            is_vec: false,
         };
-        match &segment.arguments {
+        tg_field = if segment.ident == "Option" {
+            tg_field.option()
+        } else if segment.ident == "Vec" {
+            tg_field.vec()
+        } else {
+            tg_field
+        };
+        tg_field = match &segment.arguments {
             syn::PathArguments::None => {
                 if segment.ident == "String" {
-                    fields.push(tg_field(false, true));
+                    tg_field.str()
                 } else {
-                    fields.push(tg_field(false, false));
+                    tg_field
                 }
             }
             syn::PathArguments::AngleBracketed(args) => {
-                if let Some(GenericArgument::Type(ty)) = &args.args.last() {
-                    // <String>
-                    if let Type::Path(ty_path) = &ty {
-                        let f = if segment.ident == "Option" {
-                            if ty_path.path.is_ident("String") {
-                                tg_field(true, true)
-                            } else {
-                                tg_field(true, false)
-                            }
-                        } else {
-                            tg_field(false, false)
-                        }
-                        .inner_ty(ty);
-                        fields.push(f);
-                    }
+                let Some(GenericArgument::Type(ty)) = &args.args.last() else {
+                    continue;
+                };
+                // <String>
+                let Type::Path(ty_path) = &ty else {
+                    continue;
+                };
+                tg_field = tg_field.inner_ty(ty);
+                if ty_path.path.is_ident("String") {
+                    tg_field.str()
+                } else {
+                    tg_field
                 }
             }
             syn::PathArguments::Parenthesized(_) => panic!("unsupport parenthesized field type"),
-        }
+        };
+        fields.push(tg_field);
     }
-    Ok(fields)
+    fields
 }

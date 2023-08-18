@@ -5,4 +5,4 @@ pub mod command;
 pub mod methods;
 pub mod types;
 
-pub use tgbotool_derive::BotCommand;
+pub use tgbotool_derive::*;

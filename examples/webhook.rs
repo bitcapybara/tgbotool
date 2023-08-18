@@ -3,7 +3,7 @@ use clap::Parser;
 use tgbotool::{
     client::Client,
     methods::{
-        answer_callback_query::AnswerCallbackQueryBuilder, send_photo::SendPhotoBuilder, ChatId,
+        answer_callback_query::AnswerCallbackQueryBuilder, send_media::SendPhotoBuilder, ChatId,
         SendFile,
     },
     types::update::{Update, UpdateType},
@@ -41,7 +41,7 @@ async fn process_webhook(State(client): State<Client>, Json(update): Json<Update
             let Some(_text) = &msg.text else { return };
             let chat_id = ChatId::Chat(msg.chat.id);
             println!("{}", msg.chat.id);
-            let send_file = SendFile::file_id_or_url(
+            let send_file = SendFile::id_or_url(
                 "AgACAgUAAxkDAANNZNxAxTaHn7g_YEbJR1qg8t54TEUAAo61MRuDK-hW_Cn_fSdb_YIBAAMCAAN4AAMwBA"
             );
             let photo = SendPhotoBuilder::new(chat_id, send_file)

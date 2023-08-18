@@ -1,13 +1,13 @@
 use core::panic;
 
 use heck::{ToLowerCamelCase, ToPascalCase, ToSnekCase};
-use proc_macro::TokenStream;
+use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{parse::ParseStream, Data, DeriveInput, Token};
 
 use crate::parser::parse_lit_str;
 
-pub(crate) fn bot_command_inner(input: DeriveInput) -> Result<TokenStream, syn::Error> {
+pub(crate) fn bot_command_inner(input: DeriveInput) -> TokenStream {
     let Data::Enum(data_enum) = input.data else {
         panic!("Only enum support!");
     };
@@ -19,9 +19,9 @@ pub(crate) fn bot_command_inner(input: DeriveInput) -> Result<TokenStream, syn::
             continue;
         }
         // #[command(bot_name = "", rename_rule = "")]
-        let attrs = enum_attr.parse_args_with(|input: ParseStream| {
-            input.parse_terminated(parse_lit_str, Token![,])
-        })?;
+        let attrs = enum_attr
+            .parse_args_with(|input: ParseStream| input.parse_terminated(parse_lit_str, Token![,]))
+            .unwrap();
         for (key, value) in attrs {
             match key.to_string().as_str() {
                 "bot_name" => command_enum.bot_name = Some(value.value()),
@@ -46,9 +46,11 @@ pub(crate) fn bot_command_inner(input: DeriveInput) -> Result<TokenStream, syn::
                 continue;
             }
             // #[command(rename = "")]
-            let attrs = var_attr.parse_args_with(|input: ParseStream| {
-                input.parse_terminated(parse_lit_str, Token![,])
-            })?;
+            let attrs = var_attr
+                .parse_args_with(|input: ParseStream| {
+                    input.parse_terminated(parse_lit_str, Token![,])
+                })
+                .unwrap();
             for (key, value) in attrs {
                 match key.to_string().as_str() {
                     "rename" => command_variant.rename = Some(value.value()),
@@ -96,7 +98,7 @@ pub(crate) fn bot_command_inner(input: DeriveInput) -> Result<TokenStream, syn::
             }
         }
     }
-    Ok(quote! {
+    quote! {
         impl tgbotool::command::BotCommand for #enum_ident {
             fn parse(message: &str) -> Result<Self, tgbotool::command::Error> {
                 use tgbotool::command;
@@ -123,7 +125,6 @@ pub(crate) fn bot_command_inner(input: DeriveInput) -> Result<TokenStream, syn::
             }
         }
     }
-    .into())
 }
 
 #[derive(Debug, Default)]

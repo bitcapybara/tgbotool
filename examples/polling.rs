@@ -4,8 +4,8 @@ use tgbotool::{
     client::Client,
     methods::{
         get_updates::{GetUpdates, GetUpdatesBuilder},
-        send_media_group::{InputFile, InputMediaPhotoBuilder, Media, SendMediaGroupBuilder},
-        ChatId,
+        send_media_group::{InputFile, InputMediaPhotoBuilder, SendMediaGroupBuilder},
+        ChatId, SendFile,
     },
 };
 use tokio::{fs, io::AsyncReadExt, time};
@@ -28,10 +28,10 @@ async fn main() -> anyhow::Result<()> {
         ChatId::Chat(5990504871),
         vec![
             InputFile::Photo(
-                InputMediaPhotoBuilder::new(Media::attach("capybara", capy_bytes)).build(),
+                InputMediaPhotoBuilder::new(SendFile::upload("capybara", capy_bytes)).build(),
             ),
             InputFile::Photo(
-                InputMediaPhotoBuilder::new(Media::attach("bash", bash_bytes)).build(),
+                InputMediaPhotoBuilder::new(SendFile::upload("bash", bash_bytes)).build(),
             ),
         ],
     )

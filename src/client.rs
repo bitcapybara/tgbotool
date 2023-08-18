@@ -5,7 +5,7 @@ use serde::{de::DeserializeOwned, Serialize};
 use crate::{
     methods::{
         answer_callback_query::AnswerCallbackQuery, get_file::GetFile, get_updates::GetUpdates,
-        send_media_group::SendMediaGroup, send_message::SendMessage, send_photo::SendPhoto,
+        send_media::SendPhoto, send_media_group::SendMediaGroup, send_message::SendMessage,
     },
     types::{message::Message, update::Update, File, PhotoSize},
 };

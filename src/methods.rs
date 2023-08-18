@@ -1,5 +1,4 @@
 use reqwest::multipart;
-use serde_with::skip_serializing_none;
 
 use crate::types::{
     ForceReply, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup,
@@ -9,9 +8,9 @@ use crate::types::{
 pub mod answer_callback_query;
 pub mod get_file;
 pub mod get_updates;
+pub mod send_media;
 pub mod send_media_group;
 pub mod send_message;
-pub mod send_photo;
 
 #[derive(serde::Serialize)]
 #[serde(untagged)]
@@ -35,38 +34,70 @@ impl ReplyMarkup {
     }
 }
 
-#[skip_serializing_none]
 #[derive(serde::Serialize)]
 #[serde(untagged)]
 pub enum SendFile {
-    UploadInput {
-        file_name: String,
-        file_bytes: Vec<u8>,
-    },
+    UploadInput(UploadFile),
     FileIdOrUrl(String),
 }
 
+#[derive(serde::Serialize)]
+pub struct UploadFile {
+    file_name: String,
+    file_bytes: Vec<u8>,
+}
+
+pub enum FilePart {
+    Simple(reqwest::multipart::Part),
+    Complex((String, reqwest::multipart::Part)),
+}
+
 impl SendFile {
-    pub fn file_id_or_url<S>(id: S) -> Self
+    pub fn id_or_url<S>(id: S) -> Self
     where
         S: Into<String>,
     {
         Self::FileIdOrUrl(id.into())
     }
 
-    pub fn input(file_name: &str, input: Vec<u8>) -> Self {
-        Self::UploadInput {
+    pub fn upload(file_name: &str, input: Vec<u8>) -> Self {
+        Self::UploadInput(UploadFile {
             file_name: file_name.to_string(),
             file_bytes: input,
-        }
+        })
     }
-    pub fn into_part(self) -> reqwest::multipart::Part {
-        match self {
-            SendFile::UploadInput {
+}
+
+impl From<SendFile> for reqwest::multipart::Part {
+    fn from(this: SendFile) -> Self {
+        match this {
+            SendFile::UploadInput(UploadFile {
                 file_name,
                 file_bytes,
-            } => multipart::Part::bytes(file_bytes).file_name(file_name),
+            }) => multipart::Part::bytes(file_bytes).file_name(file_name),
             SendFile::FileIdOrUrl(s) => reqwest::multipart::Part::text(s),
         }
+    }
+}
+
+impl From<SendFile> for Vec<FilePart> {
+    fn from(this: SendFile) -> Self {
+        let mut res = Vec::new();
+        match this {
+            SendFile::UploadInput(UploadFile {
+                file_name,
+                file_bytes,
+            }) => {
+                res.push(FilePart::Simple(multipart::Part::text(format!(
+                    "attach://{file_name}"
+                ))));
+                res.push(FilePart::Complex((
+                    file_name.to_owned(),
+                    multipart::Part::bytes(file_bytes).file_name(file_name.clone()),
+                )))
+            }
+            SendFile::FileIdOrUrl(s) => res.push(FilePart::Simple(multipart::Part::text(s))),
+        }
+        res
     }
 }
