@@ -2,7 +2,20 @@ use serde_with::skip_serializing_none;
 
 use crate::types::message::MessageEntity;
 
-use super::{ChatId, ReplyMarkup, SendFile, UploadFile};
+use super::{ChatId, ReplyMarkup, SendFile};
+
+macro_rules! impl_thumbnail {
+    ($builder: path) => {
+        impl $builder {
+            pub fn thumbnail(mut self, file: super::UploadFile) -> Self {
+                self.thumbnail = Some(SendFile::UploadInput(file));
+                self
+            }
+        }
+    };
+}
+
+impl_thumbnail!(SendAudioBuilder);
 
 #[skip_serializing_none]
 #[derive(serde::Serialize, tgbotool_derive::Builder, tgbotool_derive::Multipart)]
@@ -50,11 +63,4 @@ pub struct SendAudio {
     reply_to_message_id: Option<u64>,
     allow_sending_without_reply: Option<bool>,
     reply_markup: Option<ReplyMarkup>,
-}
-
-impl SendAudioBuilder {
-    pub fn thumbnail(mut self, file: UploadFile) -> Self {
-        self.thumbnail = Some(SendFile::UploadInput(file));
-        self
-    }
 }
