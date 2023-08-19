@@ -4,10 +4,10 @@ use tgbotool::{
     client::Client,
     methods::{
         get_updates::{GetUpdates, GetUpdatesBuilder},
-        send_media_group::{InputMediaPhotoBuilder, Media, SendMediaGroupBuilder},
-        ChatId, SendFile,
+        send_media::SendVideoBuilder,
+        ChatId, SendFile, UploadFile,
     },
-    types::update::Update,
+    types::{message::Message, update::Update},
 };
 use tokio::{fs, io::AsyncReadExt, time};
 
@@ -16,7 +16,7 @@ async fn main() -> anyhow::Result<()> {
     let token = env::var("TG_BOT_TOKEN")?;
     let client = Client::new(&token);
     let mut capy_bytes = Vec::new();
-    fs::File::open("/home/yanyuxing/downloads/capybara.jpg")
+    fs::File::open("/home/yanyuxing/downloads/bara.mp4")
         .await?
         .read_to_end(&mut capy_bytes)
         .await?;
@@ -25,17 +25,14 @@ async fn main() -> anyhow::Result<()> {
         .await?
         .read_to_end(&mut bash_bytes)
         .await?;
-    let group = SendMediaGroupBuilder::new(
+    let video = SendVideoBuilder::new(
         ChatId::Chat(5990504871),
-        vec![
-            Media::Photo(
-                InputMediaPhotoBuilder::new(SendFile::upload("capybara", capy_bytes)).build(),
-            ),
-            Media::Photo(InputMediaPhotoBuilder::new(SendFile::upload("bash", bash_bytes)).build()),
-        ],
+        SendFile::upload("capybara", capy_bytes),
     )
+    .thumbnail(UploadFile::new("thsumb", bash_bytes))
     .build();
-    client.send_media_ok(group).await?;
+    let msg: Message = client.send_media(video).await?;
+    println!("{}", serde_json::to_string(&msg)?);
 
     // get first update id
     let updates: Vec<Update> = client.send(GetUpdates::default()).await?;

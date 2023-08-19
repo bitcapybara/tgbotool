@@ -54,6 +54,15 @@ pub struct UploadFile {
     file_bytes: Vec<u8>,
 }
 
+impl UploadFile {
+    pub fn new(file_name: &str, file_bytes: Vec<u8>) -> Self {
+        Self {
+            file_name: file_name.to_string(),
+            file_bytes,
+        }
+    }
+}
+
 pub enum FilePart {
     Simple(reqwest::multipart::Part),
     Complex((String, reqwest::multipart::Part)),
@@ -75,6 +84,7 @@ impl SendFile {
     }
 }
 
+/// used by normal multipart
 impl From<SendFile> for reqwest::multipart::Part {
     fn from(this: SendFile) -> Self {
         match this {
@@ -87,6 +97,7 @@ impl From<SendFile> for reqwest::multipart::Part {
     }
 }
 
+/// used by attach multipart
 impl From<SendFile> for Vec<FilePart> {
     fn from(this: SendFile) -> Self {
         let mut res = Vec::new();

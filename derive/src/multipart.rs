@@ -44,28 +44,8 @@ pub(crate) fn multipart_inner(input: DeriveInput) -> TokenStream {
         match (f.is_option, f.is_str) {
             (false, false) => match &f.multipart {
                 Some(multipart) => match multipart {
-                    MultipartType::Normal => {
-                        if !f.is_vec {
-                            normal_multipart
-                        } else {
-                            quote! {
-                                for #raw_fident in this.#raw_fident {
-                                    #normal_multipart
-                                }
-                            }
-                        }
-                    }
-                    MultipartType::Attach => {
-                        if !f.is_vec {
-                            attach_multipart
-                        } else {
-                            quote! {
-                                for #raw_fident in this.#raw_fident {
-                                        #attach_multipart
-                                }
-                            }
-                        }
-                    }
+                    MultipartType::Normal => normal_multipart,
+                    MultipartType::Attach => attach_multipart,
                 },
                 None => normal,
             },
@@ -76,40 +56,16 @@ pub(crate) fn multipart_inner(input: DeriveInput) -> TokenStream {
             },
             (true, false) => match &f.multipart {
                 Some(mulpart) => match mulpart {
-                    MultipartType::Normal => {
-                        if !f.is_vec {
-                            quote! {
-                                if let Some(#raw_fident) = this.#raw_fident {
-                                    #normal_multipart
-                                }
-                            }
-                        } else {
-                            quote! {
-                                if let Some(#raw_fident) = this.#raw_fident {
-                                    for #fident in #fident {
-                                        #normal_multipart
-                                    }
-                                }
-                            }
+                    MultipartType::Normal => quote! {
+                        if let Some(#raw_fident) = this.#raw_fident {
+                            #normal_multipart
                         }
-                    }
-                    MultipartType::Attach => {
-                        if !f.is_vec {
-                            quote! {
-                                if let Some(#raw_fident) = this.#raw_fident {
-                                    #attach_multipart
-                                }
-                            }
-                        } else {
-                            quote! {
-                                if let Some(#raw_fident) = this.#raw_fident {
-                                    for #fident in #raw_fident {
-                                        #attach_multipart
-                                    }
-                                }
-                            }
+                    },
+                    MultipartType::Attach => quote! {
+                        if let Some(#raw_fident) = this.#raw_fident {
+                            #attach_multipart
                         }
-                    }
+                    },
                 },
                 None => quote! {
                     if let Some(#raw_fident) = this.#raw_fident {
