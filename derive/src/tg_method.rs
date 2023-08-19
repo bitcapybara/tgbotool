@@ -11,7 +11,7 @@ pub(crate) fn tg_method_inner(input: DeriveInput) -> proc_macro2::TokenStream {
         panic!("support struct only")
     };
     let fields = get_fields(&data_struct.fields);
-    let is_multipart_method = fields
+    let mut method = fields
         .iter()
         .filter_map(|f| {
             let fident = f.ident;
@@ -27,18 +27,25 @@ pub(crate) fn tg_method_inner(input: DeriveInput) -> proc_macro2::TokenStream {
                 }
             })
         })
-        .chain([quote! {false}]);
+        .peekable();
+    let is_multipart_method = if method.peek().is_none() {
+        quote! {}
+    } else {
+        quote! {
+            fn is_multipart(&self) -> bool {
+                #(
+                    #method
+                )||*
+            }
+        }
+    };
     quote! {
         impl super::TgMethod for #ident {
             fn method_name() -> String {
                 #method_name.to_owned()
             }
 
-            fn is_multipart(&self) -> bool {
-                #(
-                    #is_multipart_method
-                )||*
-            }
+            #is_multipart_method
         }
     }
 }
