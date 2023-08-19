@@ -47,7 +47,7 @@ async fn process_webhook(State(client): State<Client>, Json(update): Json<Update
             let photo = SendPhotoBuilder::new(chat_id, send_file)
                 .caption("send file #abc")
                 .build();
-            if let Err(e) = client.send_photo(photo).await {
+            if let Err(e) = client.send_media_ok(photo).await {
                 println!("send photo error: {e}")
             }
         }
@@ -62,7 +62,7 @@ async fn process_webhook(State(client): State<Client>, Json(update): Json<Update
             if let Some(data) = cq.data.as_ref() {
                 answer_message = answer_message.text(data).show_alert(true);
             }
-            if let Err(e) = client.answer_callback_query(answer_message.build()).await {
+            if let Err(e) = client.send_ok(answer_message.build()).await {
                 println!("send callback answer error: {e}")
             }
         }

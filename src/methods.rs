@@ -12,6 +12,13 @@ pub mod send_media;
 pub mod send_media_group;
 pub mod send_message;
 
+pub trait TgMethod: serde::Serialize {
+    fn method_name() -> String;
+    fn is_multipart(&self) -> bool {
+        false
+    }
+}
+
 #[derive(serde::Serialize)]
 #[serde(untagged)]
 pub enum ChatId {

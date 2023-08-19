@@ -1,7 +1,7 @@
 use serde_with::skip_serializing_none;
 
 #[skip_serializing_none]
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, tgbotool_derive::TgMethod)]
 pub struct GetFile {
     file_id: String,
 }

@@ -2,7 +2,7 @@ use serde_with::skip_serializing_none;
 
 use crate::types::message::MessageEntity;
 
-use super::{ChatId, FilePart, SendFile};
+use super::{ChatId, FilePart, SendFile, TgMethod};
 
 #[skip_serializing_none]
 #[derive(serde::Serialize, tgbotool_derive::Builder, tgbotool_derive::Multipart)]
@@ -10,15 +10,19 @@ pub struct SendMediaGroup {
     chat_id: ChatId,
     message_thread_id: Option<u64>,
     #[multipart(attach)]
-    media: Vec<InputFile>,
+    media: Vec<Media>,
     disable_notification: Option<bool>,
     protect_content: Option<bool>,
     reply_to_message_id: Option<u64>,
     allow_sending_without_reply: Option<bool>,
 }
 
-impl SendMediaGroup {
-    pub fn is_multipart(&self) -> bool {
+impl TgMethod for SendMediaGroup {
+    fn method_name() -> String {
+        "sendMediaGroup".to_string()
+    }
+
+    fn is_multipart(&self) -> bool {
         for media in &self.media {
             if media.is_multipart() {
                 return true;
@@ -30,29 +34,29 @@ impl SendMediaGroup {
 
 #[derive(serde::Serialize)]
 #[serde(untagged)]
-pub enum InputFile {
+pub enum Media {
     Audio(InputMediaAudio),
     Document(InputMediaDocument),
     Photo(InputMediaPhoto),
     Video(InputMediaVideo),
 }
 
-impl InputFile {
+impl Media {
     fn get_media_mut(&mut self) -> &mut SendFile {
         match self {
-            InputFile::Audio(m) => &mut m.media,
-            InputFile::Document(m) => &mut m.media,
-            InputFile::Photo(m) => &mut m.media,
-            InputFile::Video(m) => &mut m.media,
+            Media::Audio(m) => &mut m.media,
+            Media::Document(m) => &mut m.media,
+            Media::Photo(m) => &mut m.media,
+            Media::Video(m) => &mut m.media,
         }
     }
 
     fn get_media(&self) -> &SendFile {
         match self {
-            InputFile::Audio(m) => &m.media,
-            InputFile::Document(m) => &m.media,
-            InputFile::Photo(m) => &m.media,
-            InputFile::Video(m) => &m.media,
+            Media::Audio(m) => &m.media,
+            Media::Document(m) => &m.media,
+            Media::Photo(m) => &m.media,
+            Media::Video(m) => &m.media,
         }
     }
 
@@ -61,13 +65,13 @@ impl InputFile {
     }
 }
 
-impl From<InputFile> for Vec<FilePart> {
-    fn from(this: InputFile) -> Self {
+impl From<Media> for Vec<FilePart> {
+    fn from(this: Media) -> Self {
         match this {
-            InputFile::Audio(m) => m.media.into(),
-            InputFile::Document(m) => m.media.into(),
-            InputFile::Photo(m) => m.media.into(),
-            InputFile::Video(m) => m.media.into(),
+            Media::Audio(m) => m.media.into(),
+            Media::Document(m) => m.media.into(),
+            Media::Photo(m) => m.media.into(),
+            Media::Video(m) => m.media.into(),
         }
     }
 }

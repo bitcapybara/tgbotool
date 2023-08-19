@@ -1,13 +1,8 @@
 use std::sync::Arc;
 
-use serde::{de::DeserializeOwned, Serialize};
-
 use crate::{
-    methods::{
-        answer_callback_query::AnswerCallbackQuery, get_file::GetFile, get_updates::GetUpdates,
-        send_media::SendPhoto, send_media_group::SendMediaGroup, send_message::SendMessage,
-    },
-    types::{message::Message, update::Update, File, PhotoSize},
+    methods::{get_file::GetFile, TgMethod},
+    types::File,
 };
 
 type Result<T, E = Error> = std::result::Result<T, E>;
@@ -69,40 +64,66 @@ impl Client {
             bot_token: bot_token.to_owned(),
         }
     }
-    pub(crate) async fn send_ok<T>(&self, method: &str, body: T) -> Result<(), Error>
+    pub async fn send_ok<T>(&self, body: T) -> Result<(), Error>
     where
-        T: Serialize,
+        T: TgMethod,
+        T: TgMethod,
     {
-        let url = format!("{}/{method}", self.tg_url);
-        let raw_resp = self.client.post(url).json(&body).send().await?;
-        let status = raw_resp.status();
-        if !status.is_success() {
-            let ErrResponse {
-                error_code,
-                description,
-                ..
-            } = raw_resp.json::<ErrResponse>().await?;
-            return Err(Error::Response(format!(
-                "status: {}: {} {}",
-                status, error_code, description
-            )));
-        }
-        Ok(())
+        let resp = self.build_request(body).await?;
+        self.get_ok_response(resp).await
+    }
+    pub async fn send_media_ok<T>(&self, body: T) -> Result<(), Error>
+    where
+        T: TgMethod + TryInto<reqwest::multipart::Form, Error = serde_json::Error>,
+        T: TgMethod,
+    {
+        let resp = self.build_media_request(body).await?;
+        self.get_ok_response(resp).await
     }
 
-    pub(crate) async fn send<T, R>(&self, method: &str, body: T) -> Result<R, Error>
+    pub async fn send<T, R>(&self, body: T) -> Result<R, Error>
     where
-        T: Serialize,
-        R: DeserializeOwned,
+        T: TgMethod,
+        R: serde::de::DeserializeOwned,
     {
-        let url = format!("{}/{method}", self.tg_url);
-        let raw_resp = self.client.post(url).json(&body).send().await?;
-        self.get_response(raw_resp).await
+        let resp = self.build_request(body).await?;
+        self.get_response(resp).await
+    }
+
+    pub async fn send_media<T, R>(&self, body: T) -> Result<R, Error>
+    where
+        T: TgMethod + TryInto<reqwest::multipart::Form, Error = serde_json::Error>,
+        R: serde::de::DeserializeOwned,
+    {
+        let resp = self.build_media_request(body).await?;
+        self.get_response(resp).await
+    }
+
+    async fn build_request<T>(&self, body: T) -> Result<reqwest::Response>
+    where
+        T: TgMethod,
+    {
+        let url = format!("{}/{}", self.tg_url, T::method_name());
+        Ok(self.client.post(url).json(&body).send().await?)
+    }
+
+    async fn build_media_request<T>(&self, body: T) -> Result<reqwest::Response>
+    where
+        T: TgMethod + TryInto<reqwest::multipart::Form, Error = serde_json::Error>,
+    {
+        let url = format!("{}/{}", self.tg_url, T::method_name());
+        let mut req_builder = self.client.post(url);
+        if body.is_multipart() {
+            req_builder = req_builder.multipart(body.try_into()?);
+        } else {
+            req_builder = req_builder.json(&body);
+        }
+        Ok(req_builder.send().await?)
     }
 
     async fn get_response<R>(&self, resp: reqwest::Response) -> Result<R, Error>
     where
-        R: DeserializeOwned,
+        R: serde::de::DeserializeOwned,
     {
         let status = resp.status();
         let resp = resp.json::<TgResponse<R>>().await?;
@@ -119,33 +140,24 @@ impl Client {
         }
     }
 
-    pub async fn send_message(&self, message: SendMessage) -> Result<()> {
-        self.send_ok("sendMessage", message).await
-    }
-
-    pub async fn answer_callback_query(&self, message: AnswerCallbackQuery) -> Result<()> {
-        self.send_ok("answerCallbackQuery", message).await
-    }
-
-    pub async fn send_photo(&self, photo: SendPhoto) -> Result<Vec<PhotoSize>> {
-        let url = format!("{}/sendPhoto", self.tg_url);
-        let mut req_builder = self.client.post(url);
-        if photo.is_multipart() {
-            req_builder = req_builder.multipart(photo.try_into()?);
-        } else {
-            req_builder = req_builder.json(&photo);
+    async fn get_ok_response(&self, resp: reqwest::Response) -> Result<(), Error> {
+        let status = resp.status();
+        if !status.is_success() {
+            let ErrResponse {
+                error_code,
+                description,
+                ..
+            } = resp.json::<ErrResponse>().await?;
+            return Err(Error::Response(format!(
+                "status: {}: {} {}",
+                status, error_code, description
+            )));
         }
-        let resp = req_builder.send().await?;
-        let message = self.get_response::<Message>(resp).await?;
-        Ok(message.photo.unwrap_or_default())
-    }
-
-    pub async fn get_updates(&self, body: GetUpdates) -> Result<Vec<Update>> {
-        self.send("getUpdates", body).await
+        Ok(())
     }
 
     pub async fn get_file(&self, body: GetFile) -> Result<Option<Vec<u8>>> {
-        let file: File = self.send("getFile", body).await?;
+        let file: File = self.send(body).await?;
         let Some(file_path) = file.file_path else {
             return Ok(None);
         };
@@ -160,29 +172,5 @@ impl Client {
         }
 
         Ok(Some(resp.bytes().await?.to_vec()))
-    }
-
-    pub async fn send_media_group(&self, group: SendMediaGroup) -> Result<()> {
-        let url = format!("{}/sendMediaGroup", self.tg_url);
-        let mut req_builder = self.client.post(url);
-        if group.is_multipart() {
-            req_builder = req_builder.multipart(group.try_into()?);
-        } else {
-            req_builder = req_builder.json(&group);
-        }
-        let resp = req_builder.send().await?;
-        let status = resp.status();
-        if !status.is_success() {
-            let ErrResponse {
-                error_code,
-                description,
-                ..
-            } = resp.json::<ErrResponse>().await?;
-            return Err(Error::Response(format!(
-                "status: {}: {} {}",
-                status, error_code, description
-            )));
-        }
-        Ok(())
     }
 }

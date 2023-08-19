@@ -4,9 +4,10 @@ use tgbotool::{
     client::Client,
     methods::{
         get_updates::{GetUpdates, GetUpdatesBuilder},
-        send_media_group::{InputFile, InputMediaPhotoBuilder, SendMediaGroupBuilder},
+        send_media_group::{InputMediaPhotoBuilder, Media, SendMediaGroupBuilder},
         ChatId, SendFile,
     },
+    types::update::Update,
 };
 use tokio::{fs, io::AsyncReadExt, time};
 
@@ -27,23 +28,21 @@ async fn main() -> anyhow::Result<()> {
     let group = SendMediaGroupBuilder::new(
         ChatId::Chat(5990504871),
         vec![
-            InputFile::Photo(
+            Media::Photo(
                 InputMediaPhotoBuilder::new(SendFile::upload("capybara", capy_bytes)).build(),
             ),
-            InputFile::Photo(
-                InputMediaPhotoBuilder::new(SendFile::upload("bash", bash_bytes)).build(),
-            ),
+            Media::Photo(InputMediaPhotoBuilder::new(SendFile::upload("bash", bash_bytes)).build()),
         ],
     )
     .build();
-    client.send_media_group(group).await?;
+    client.send_media_ok(group).await?;
 
     // get first update id
-    let updates = client.get_updates(GetUpdates::default()).await?;
+    let updates: Vec<Update> = client.send(GetUpdates::default()).await?;
     let mut update_id = updates.last().map(|u| u.update_id).unwrap_or_default();
     loop {
         let body = GetUpdatesBuilder::new().offset(update_id + 1).build();
-        let updates = client.get_updates(body).await?;
+        let updates: Vec<Update> = client.send(body).await?;
         if let Some(update) = updates.last() {
             update_id = update.update_id;
         }

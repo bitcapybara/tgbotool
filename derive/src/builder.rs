@@ -1,17 +1,17 @@
-use proc_macro2::{Span, TokenStream};
+use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Data, DeriveInput};
+use syn::{spanned::Spanned, Data, DeriveInput};
 
 use crate::fields::get_fields;
 
 pub(crate) fn builder_inner(input: DeriveInput) -> TokenStream {
-    let Data::Struct(struct_data) = input.data else {
+    let Data::Struct(struct_data) = &input.data else {
         panic!("current only support struct")
     };
-    let struct_ident = input.ident;
-    let struct_vis = input.vis;
+    let struct_ident = &input.ident;
+    let struct_vis = &input.vis;
     let fields = get_fields(&struct_data.fields);
-    let builder_ident = syn::Ident::new(&format!("{struct_ident}Builder"), Span::call_site());
+    let builder_ident = syn::Ident::new(&format!("{struct_ident}Builder"), input.span());
     let field_init = fields.iter().map(|f| {
         let fident = f.ident;
         let ftype = f.ty;
