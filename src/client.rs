@@ -57,10 +57,10 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn new(bot_token: &str) -> Self {
+    pub fn new(bot_token: &str, http_client: reqwest::Client) -> Self {
         Self {
             tg_url: format!("https://api.telegram.org/bot{bot_token}"),
-            client: Arc::new(reqwest::Client::new()),
+            client: Arc::new(http_client),
             bot_token: bot_token.to_owned(),
         }
     }

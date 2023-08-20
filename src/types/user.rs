@@ -2,7 +2,7 @@ use serde_with::skip_serializing_none;
 
 /// This object represents a Telegram user or bot
 #[skip_serializing_none]
-#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct User {
     /// Unique identifier for this user or bot
     pub id: u64,

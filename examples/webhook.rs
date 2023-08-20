@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use axum::{debug_handler, extract::State, routing::post, Json, Router};
 use clap::Parser;
 use tgbotool::{
@@ -20,9 +22,13 @@ struct Args {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
-    let client = Client::new(&args.bot_token);
+    let http_client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(40))
+        .connect_timeout(Duration::from_secs(5))
+        .build()?;
+    let client = Client::new(&args.bot_token, http_client);
     let app = Router::new()
         .route("/", post(process_webhook))
         .with_state(client);
@@ -32,6 +38,7 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .unwrap();
+    Ok(())
 }
 
 #[debug_handler]

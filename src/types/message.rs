@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use serde_with::skip_serializing_none;
 
 use super::{
@@ -89,7 +91,7 @@ pub struct Message {
     pub reply_markup: Option<InlineKeyboardMarkup>,
 }
 
-#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct MessageEntity {
     #[serde(rename = "type")]
     pub entity_type: MessageEntityType,
@@ -101,7 +103,7 @@ pub struct MessageEntity {
     pub custom_emoji_id: Option<String>,
 }
 
-#[derive(Copy, Clone, serde::Serialize, serde::Deserialize, PartialEq)]
+#[derive(Debug, Copy, Clone, serde::Serialize, serde::Deserialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum MessageEntityType {
     Mention,
@@ -121,4 +123,143 @@ pub enum MessageEntityType {
     TextLink,
     TextMention,
     CustomEmoji,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct MessageEntityRef<'a> {
+    message: &'a str,
+    range: Range<usize>,
+    entity_type: &'a MessageEntityType,
+}
+
+pub fn parse_entities<'a>(
+    text: &'a str,
+    entities: &'a [MessageEntity],
+) -> Vec<MessageEntityRef<'a>> {
+    let mut res = Vec::with_capacity(entities.len());
+
+    // utf-16 range
+    let mut offsets = entities.iter().map(|e| MessageEntityRef {
+        message: text,
+        range: e.offset..e.offset + e.length,
+        entity_type: &e.entity_type,
+    });
+
+    let mut chars = text.chars().peekable();
+    let mut utf8_start_offset = 0;
+    let mut utf16_start_offset = 0;
+    let mut utf8_end_offset = 0;
+    let mut utf16_end_offset = 0;
+    let Some(mut offset) = offsets.next() else {
+        return res;
+    };
+    while let Some(char) = chars.next() {
+        utf8_end_offset += char.len_utf8();
+        utf16_end_offset += char.len_utf16();
+        if utf16_start_offset >= offset.range.start {
+            let finded_utf8_offset = utf8_start_offset;
+            if chars.peek().is_some() {
+                utf16_start_offset += char.len_utf16();
+                utf8_start_offset += char.len_utf8();
+            }
+            // find offset
+            while let Some(char) = chars.next() {
+                utf8_end_offset += char.len_utf8();
+                utf16_end_offset += char.len_utf16();
+                if utf16_end_offset >= offset.range.end {
+                    res.push(MessageEntityRef {
+                        message: text,
+                        range: finded_utf8_offset..utf8_end_offset,
+                        entity_type: offset.entity_type,
+                    });
+                    let Some(entity) = offsets.next() else {
+                        return res;
+                    };
+                    offset = entity;
+                }
+                if chars.peek().is_some() {
+                    utf16_start_offset += char.len_utf16();
+                    utf8_start_offset += char.len_utf8();
+                }
+            }
+            continue;
+        }
+        if chars.peek().is_some() {
+            utf16_start_offset += char.len_utf16();
+            utf8_start_offset += char.len_utf8();
+        }
+    }
+
+    res
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn entities_start_0() {
+        let msg: Vec<MessageEntity> = serde_json::from_str(
+            r#"
+                [
+                    {
+                      "type": "strikethrough",
+                      "offset": 0,
+                      "length": 7
+                    }
+                ]
+            "#,
+        )
+        .unwrap();
+        assert_eq!(
+            parse_entities("jkflsd;", &msg)
+                .get(0)
+                .and_then(|e| e.message.get(e.range.clone())),
+            Some("jkflsd;")
+        );
+    }
+
+    #[test]
+    fn entities_start_1() {
+        let msg: Vec<MessageEntity> = serde_json::from_str(
+            r#"
+                [
+                    {
+                        "type": "url",
+                        "offset": 3,
+                        "length": 21
+                    }
+                ]
+            "#,
+        )
+        .unwrap();
+        assert_eq!(
+            parse_entities("上周 https://www.baidu.com", &msg)
+                .get(0)
+                .and_then(|e| e.message.get(e.range.clone())),
+            Some("https://www.baidu.com")
+        );
+    }
+
+    #[test]
+    fn entities_start_2() {
+        let msg: Vec<MessageEntity> = serde_json::from_str(
+            r#"
+                [
+                    {
+                        "type": "hashtag",
+                        "offset": 2,
+                        "length": 3
+                    }
+                ]
+            "#,
+        )
+        .unwrap();
+        assert_eq!(
+            parse_entities("我 #上班 o", &msg)
+                .get(0)
+                .and_then(|e| e.message.get(e.range.clone())),
+            Some("#上班")
+        );
+    }
 }
