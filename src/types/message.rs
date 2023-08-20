@@ -215,7 +215,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn entities_start_0() {
+    fn entities_0() {
         let msgs: Vec<MessageEntity> = serde_json::from_str(
             r#"
                 [
@@ -238,7 +238,7 @@ mod tests {
     }
 
     #[test]
-    fn entities_start_1() {
+    fn entities_1() {
         let msgs: Vec<MessageEntity> = serde_json::from_str(
             r#"
                 [
@@ -261,7 +261,7 @@ mod tests {
     }
 
     #[test]
-    fn entities_start_2() {
+    fn entities_2() {
         let msgs: Vec<MessageEntity> = serde_json::from_str(
             r#"
                 [
