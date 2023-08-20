@@ -132,6 +132,13 @@ pub struct MessageEntityRef<'a> {
     entity_type: &'a MessageEntityType,
 }
 
+pub struct EnitityCharIter<'a> {
+    text: &'a str,
+    utf8_offset: usize,
+    utf16_offset: usize,
+    current: Option<char>,
+}
+
 pub fn parse_entities<'a>(
     text: &'a str,
     entities: &'a [MessageEntity],
@@ -146,30 +153,24 @@ pub fn parse_entities<'a>(
     });
 
     let mut chars = text.chars().peekable();
-    let mut utf8_start_offset = 0;
-    let mut utf16_start_offset = 0;
-    let mut utf8_end_offset = 0;
-    let mut utf16_end_offset = 0;
+    let mut utf8_offset = 0;
+    let mut utf16_offset = 0;
     let Some(mut offset) = offsets.next() else {
         return res;
     };
     while let Some(char) = chars.next() {
-        utf8_end_offset += char.len_utf8();
-        utf16_end_offset += char.len_utf16();
-        if utf16_start_offset >= offset.range.start {
-            let finded_utf8_offset = utf8_start_offset;
+        if utf16_offset >= offset.range.start {
+            let finded_utf8_offset = utf8_offset;
             if chars.peek().is_some() {
-                utf16_start_offset += char.len_utf16();
-                utf8_start_offset += char.len_utf8();
+                utf16_offset += char.len_utf16();
+                utf8_offset += char.len_utf8();
             }
             // find offset
             while let Some(char) = chars.next() {
-                utf8_end_offset += char.len_utf8();
-                utf16_end_offset += char.len_utf16();
-                if utf16_end_offset >= offset.range.end {
+                if utf16_offset + char.len_utf16() >= offset.range.end {
                     res.push(MessageEntityRef {
                         message: text,
-                        range: finded_utf8_offset..utf8_end_offset,
+                        range: finded_utf8_offset..utf8_offset + char.len_utf8(),
                         entity_type: offset.entity_type,
                     });
                     let Some(entity) = offsets.next() else {
@@ -178,15 +179,15 @@ pub fn parse_entities<'a>(
                     offset = entity;
                 }
                 if chars.peek().is_some() {
-                    utf16_start_offset += char.len_utf16();
-                    utf8_start_offset += char.len_utf8();
+                    utf16_offset += char.len_utf16();
+                    utf8_offset += char.len_utf8();
                 }
             }
             continue;
         }
         if chars.peek().is_some() {
-            utf16_start_offset += char.len_utf16();
-            utf8_start_offset += char.len_utf8();
+            utf16_offset += char.len_utf16();
+            utf8_offset += char.len_utf8();
         }
     }
 
