@@ -64,14 +64,20 @@ impl Client {
             bot_token: bot_token.to_owned(),
         }
     }
+
     pub async fn send_ok<T>(&self, body: T) -> Result<(), Error>
     where
         T: TgMethod,
-        T: TgMethod,
     {
+        if body.is_multipart() {
+            return Err(Error::Request(
+                "A multipart request should use send_media_ok() method".to_string(),
+            ));
+        }
         let resp = self.build_request(body).await?;
         self.get_ok_response(resp).await
     }
+
     pub async fn send_media_ok<T>(&self, body: T) -> Result<(), Error>
     where
         T: TgMethod + TryInto<reqwest::multipart::Form, Error = serde_json::Error>,
@@ -86,6 +92,11 @@ impl Client {
         T: TgMethod,
         R: serde::de::DeserializeOwned,
     {
+        if body.is_multipart() {
+            return Err(Error::Request(
+                "A multipart request should use send_media() method".to_string(),
+            ));
+        }
         let resp = self.build_request(body).await?;
         self.get_response(resp).await
     }
@@ -125,7 +136,6 @@ impl Client {
     where
         R: serde::de::DeserializeOwned,
     {
-        let status = resp.status();
         let resp = resp.json::<TgResponse<R>>().await?;
         match resp {
             TgResponse::Ok(OkResponse { result, .. }) => Ok(result),
@@ -133,10 +143,7 @@ impl Client {
                 error_code,
                 description,
                 ..
-            }) => Err(Error::Response(format!(
-                "status: {}: {} {}",
-                status, error_code, description
-            ))),
+            }) => Err(Error::Response(format!("{} {}", error_code, description))),
         }
     }
 
@@ -148,10 +155,7 @@ impl Client {
                 description,
                 ..
             } = resp.json::<ErrResponse>().await?;
-            return Err(Error::Response(format!(
-                "status: {}: {} {}",
-                status, error_code, description
-            )));
+            return Err(Error::Response(format!("{} {}", error_code, description)));
         }
         Ok(())
     }

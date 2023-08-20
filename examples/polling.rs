@@ -11,8 +11,6 @@ async fn main() -> anyhow::Result<()> {
         .build()?;
     let client = Client::new(&token, http_client);
     // get first update id
-    // let updates: Vec<Update> = client.send(GetUpdates::default()).await?;
-    // let mut update_id = updates.last().map(|u| u.update_id).unwrap_or_default();
     let mut update_id = 0;
     loop {
         let body = GetUpdatesBuilder::new()
