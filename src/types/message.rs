@@ -1,4 +1,4 @@
-use std::ops::Range;
+use std::{iter::Peekable, ops::Range, str::Chars};
 
 use serde_with::skip_serializing_none;
 
@@ -132,11 +132,45 @@ pub struct MessageEntityRef<'a> {
     entity_type: &'a MessageEntityType,
 }
 
+impl<'a> MessageEntityRef<'a> {
+    fn copy(&self, range: Range<usize>) -> Self {
+        Self {
+            message: self.message,
+            range,
+            entity_type: self.entity_type,
+        }
+    }
+}
+
 pub struct EnitityCharIter<'a> {
-    text: &'a str,
+    chars: Peekable<Chars<'a>>,
     utf8_offset: usize,
     utf16_offset: usize,
     current: Option<char>,
+}
+
+impl<'a> EnitityCharIter<'a> {
+    fn new(text: &'a str) -> Self {
+        Self {
+            chars: text.chars().peekable(),
+            utf8_offset: 0,
+            utf16_offset: 0,
+            current: None,
+        }
+    }
+}
+
+impl<'a> Iterator for EnitityCharIter<'a> {
+    type Item = char;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(current) = self.current {
+            self.utf8_offset += current.len_utf8();
+            self.utf16_offset += current.len_utf16();
+        }
+        self.current = self.chars.peek().cloned();
+        self.chars.next()
+    }
 }
 
 pub fn parse_entities<'a>(
@@ -152,42 +186,24 @@ pub fn parse_entities<'a>(
         entity_type: &e.entity_type,
     });
 
-    let mut chars = text.chars().peekable();
-    let mut utf8_offset = 0;
-    let mut utf16_offset = 0;
+    let mut chars = EnitityCharIter::new(text);
     let Some(mut offset) = offsets.next() else {
         return res;
     };
-    while let Some(char) = chars.next() {
-        if utf16_offset >= offset.range.start {
-            let finded_utf8_offset = utf8_offset;
-            if chars.peek().is_some() {
-                utf16_offset += char.len_utf16();
-                utf8_offset += char.len_utf8();
-            }
+    while chars.next().is_some() {
+        if chars.utf16_offset >= offset.range.start {
+            let finded_utf8_offset = chars.utf8_offset;
             // find offset
             while let Some(char) = chars.next() {
-                if utf16_offset + char.len_utf16() >= offset.range.end {
-                    res.push(MessageEntityRef {
-                        message: text,
-                        range: finded_utf8_offset..utf8_offset + char.len_utf8(),
-                        entity_type: offset.entity_type,
-                    });
+                if chars.utf16_offset + char.len_utf16() >= offset.range.end {
+                    res.push(offset.copy(finded_utf8_offset..chars.utf8_offset + char.len_utf8()));
                     let Some(entity) = offsets.next() else {
                         return res;
                     };
                     offset = entity;
-                }
-                if chars.peek().is_some() {
-                    utf16_offset += char.len_utf16();
-                    utf8_offset += char.len_utf8();
+                    break;
                 }
             }
-            continue;
-        }
-        if chars.peek().is_some() {
-            utf16_offset += char.len_utf16();
-            utf8_offset += char.len_utf8();
         }
     }
 
@@ -200,7 +216,7 @@ mod tests {
 
     #[test]
     fn entities_start_0() {
-        let msg: Vec<MessageEntity> = serde_json::from_str(
+        let msgs: Vec<MessageEntity> = serde_json::from_str(
             r#"
                 [
                     {
@@ -213,16 +229,17 @@ mod tests {
         )
         .unwrap();
         assert_eq!(
-            parse_entities("jkflsd;", &msg)
-                .get(0)
-                .and_then(|e| e.message.get(e.range.clone())),
-            Some("jkflsd;")
-        );
+            parse_entities("jkflsd;", &msgs)
+                .iter()
+                .filter_map(|e| e.message.get(e.range.clone()))
+                .collect::<Vec<&str>>(),
+            ["jkflsd;"]
+        )
     }
 
     #[test]
     fn entities_start_1() {
-        let msg: Vec<MessageEntity> = serde_json::from_str(
+        let msgs: Vec<MessageEntity> = serde_json::from_str(
             r#"
                 [
                     {
@@ -235,16 +252,17 @@ mod tests {
         )
         .unwrap();
         assert_eq!(
-            parse_entities("上周 https://www.baidu.com", &msg)
-                .get(0)
-                .and_then(|e| e.message.get(e.range.clone())),
-            Some("https://www.baidu.com")
-        );
+            parse_entities("上周 https://www.baidu.com", &msgs)
+                .iter()
+                .filter_map(|e| e.message.get(e.range.clone()))
+                .collect::<Vec<&str>>(),
+            ["https://www.baidu.com"]
+        )
     }
 
     #[test]
     fn entities_start_2() {
-        let msg: Vec<MessageEntity> = serde_json::from_str(
+        let msgs: Vec<MessageEntity> = serde_json::from_str(
             r#"
                 [
                     {
@@ -257,10 +275,39 @@ mod tests {
         )
         .unwrap();
         assert_eq!(
-            parse_entities("我 #上班 o", &msg)
-                .get(0)
-                .and_then(|e| e.message.get(e.range.clone())),
-            Some("#上班")
-        );
+            parse_entities("我 #上班 o", &msgs)
+                .iter()
+                .filter_map(|e| e.message.get(e.range.clone()))
+                .collect::<Vec<&str>>(),
+            ["#上班"]
+        )
+    }
+
+    #[test]
+    fn entities_3() {
+        let msgs: Vec<MessageEntity> = serde_json::from_str(
+            r#"
+                [
+                    {
+                      "type": "hashtag",
+                      "offset": 4,
+                      "length": 3
+                    },
+                    {
+                      "type": "url",
+                      "offset": 12,
+                      "length": 21
+                    }
+                ]                
+            "#,
+        )
+        .unwrap();
+        assert_eq!(
+            parse_entities("我是中 #上班 不错  https://www.baidu.com 是我", &msgs)
+                .iter()
+                .filter_map(|e| e.message.get(e.range.clone()))
+                .collect::<Vec<&str>>(),
+            ["#上班", "https://www.baidu.com"]
+        )
     }
 }
