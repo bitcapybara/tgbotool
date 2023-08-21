@@ -142,14 +142,14 @@ impl<'a> MessageEntityRef<'a> {
     }
 }
 
-pub struct EnitityCharIter<'a> {
+struct EntityCharIter<'a> {
     chars: Peekable<Chars<'a>>,
     utf8_offset: usize,
     utf16_offset: usize,
     current: Option<char>,
 }
 
-impl<'a> EnitityCharIter<'a> {
+impl<'a> EntityCharIter<'a> {
     fn new(text: &'a str) -> Self {
         Self {
             chars: text.chars().peekable(),
@@ -160,7 +160,7 @@ impl<'a> EnitityCharIter<'a> {
     }
 }
 
-impl<'a> Iterator for EnitityCharIter<'a> {
+impl<'a> Iterator for EntityCharIter<'a> {
     type Item = char;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -186,7 +186,7 @@ pub fn parse_entities<'a>(
         entity_type: &e.entity_type,
     });
 
-    let mut chars = EnitityCharIter::new(text);
+    let mut chars = EntityCharIter::new(text);
     let Some(mut offset) = offsets.next() else {
         return res;
     };
