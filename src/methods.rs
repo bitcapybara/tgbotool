@@ -8,10 +8,10 @@ use crate::types::{
 pub mod answer_callback_query;
 pub mod get_file;
 pub mod get_updates;
-pub mod send_media;
-pub mod send_media_group;
-pub mod send_message;
-pub mod send_poll;
+pub mod media;
+pub mod media_group;
+pub mod message;
+pub mod poll;
 
 pub trait TgMethod: serde::Serialize {
     fn method_name() -> String;
