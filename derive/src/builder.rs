@@ -31,7 +31,7 @@ pub(crate) fn builder_inner(input: DeriveInput) -> TokenStream {
         .map(|f| {
             let fident = f.ident;
             let ftype = f.ty;
-            if f.is_str {
+            if f.is_str && f.inner_ty.is_none() {
                 quote! {
                     #fident: &str
                 }
@@ -43,7 +43,7 @@ pub(crate) fn builder_inner(input: DeriveInput) -> TokenStream {
         });
     let new_init_args = fields.iter().map(|f| {
         let fident = f.ident;
-        if !f.is_option && f.is_str {
+        if !f.is_option && f.inner_ty.is_none() && f.is_str {
             match &f.build_value {
                 Some(value) => quote! {
                     #fident: #value.to_owned()

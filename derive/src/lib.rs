@@ -42,33 +42,20 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test123() {
+    fn works() {
         let token_stream = r#"
-            pub struct SendAudio {
+            pub struct SendPoll {
                 chat_id: ChatId,
                 message_thread_id: Option<u64>,
-                #[multipart(normal)]
-                audio: SendFile,
-                caption: Option<String>,
-                parse_mode: Option<String>,
-                caption_entities: Option<Vec<MessageEntity>>,
-                duration: Option<usize>,
-                performer: Option<String>,
-                title: Option<String>,
-                // force to upload local file
-                #[builder(skip)]
-                #[multipart(attach)]
-                thumbnail: Option<SendFile>,
-                disable_notification: Option<bool>,
-                protect_content: Option<bool>,
-                reply_to_message_id: Option<u64>,
-                allow_sending_without_reply: Option<bool>,
-                reply_markup: Option<ReplyMarkup>,
+                question: String,
+                options: Vec<String>,
+                is_anonymous: Option<bool>,
+                poll_type: Option<PollType>,
             }
         "#
         .parse()
         .unwrap();
         let input = syn::parse2(token_stream).unwrap();
-        tg_method_inner(input);
+        builder_inner(input);
     }
 }
