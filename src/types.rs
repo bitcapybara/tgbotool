@@ -47,7 +47,8 @@ pub struct CallbackQuery {
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct PollAnswer {
     pub poll_id: String,
-    pub user: User,
+    pub voter_chat: Option<Chat>,
+    pub user: Option<User>,
     pub optins_ids: Vec<usize>,
 }
 

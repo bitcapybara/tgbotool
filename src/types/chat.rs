@@ -35,6 +35,7 @@ pub enum ChatType {
         last_name: Option<String>,
         active_usernames: Option<Vec<String>>,
         emoji_status_custom_emoji_id: Option<String>,
+        emoji_status_expiration_date: Option<u64>,
         bio: Option<String>,
         has_private_forwards: Option<bool>,
         has_restricted_voice_and_video_messages: Option<bool>,
