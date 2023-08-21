@@ -5,7 +5,7 @@ use clap::Parser;
 use tgbotool::{
     client::Client,
     methods::{
-        answer_callback_query::AnswerCallbackQueryBuilder, send_media::SendPhotoBuilder, ChatId,
+        answer_callback_query::AnswerCallbackQueryBuilder, media::SendPhotoBuilder, ChatId,
         SendFile,
     },
     types::update::{Update, UpdateType},
