@@ -11,8 +11,15 @@ pub mod get_updates;
 pub mod send_media;
 pub mod send_media_group;
 pub mod send_message;
+pub mod send_poll;
 
 pub trait TgMethod: serde::Serialize {
+    fn method_name() -> String;
+}
+
+pub trait TgMultipartMethod:
+    serde::Serialize + TryInto<reqwest::multipart::Form, Error = serde_json::Error>
+{
     fn method_name() -> String;
     fn is_multipart(&self) -> bool {
         false

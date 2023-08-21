@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
-    methods::{get_file::GetFile, TgMethod},
+    methods::{get_file::GetFile, TgMethod, TgMultipartMethod},
     types::File,
 };
 
@@ -69,19 +69,13 @@ impl Client {
     where
         T: TgMethod,
     {
-        if body.is_multipart() {
-            return Err(Error::Request(
-                "A multipart request should use send_media_ok() method".to_string(),
-            ));
-        }
         let resp = self.build_request(body).await?;
         self.get_ok_response(resp).await
     }
 
     pub async fn send_media_ok<T>(&self, body: T) -> Result<(), Error>
     where
-        T: TgMethod + TryInto<reqwest::multipart::Form, Error = serde_json::Error>,
-        T: TgMethod,
+        T: TgMultipartMethod,
     {
         let resp = self.build_media_request(body).await?;
         self.get_ok_response(resp).await
@@ -92,18 +86,13 @@ impl Client {
         T: TgMethod,
         R: serde::de::DeserializeOwned,
     {
-        if body.is_multipart() {
-            return Err(Error::Request(
-                "A multipart request should use send_media() method".to_string(),
-            ));
-        }
         let resp = self.build_request(body).await?;
         self.get_response(resp).await
     }
 
     pub async fn send_media<T, R>(&self, body: T) -> Result<R, Error>
     where
-        T: TgMethod + TryInto<reqwest::multipart::Form, Error = serde_json::Error>,
+        T: TgMultipartMethod,
         R: serde::de::DeserializeOwned,
     {
         let resp = self.build_media_request(body).await?;
@@ -120,7 +109,7 @@ impl Client {
 
     async fn build_media_request<T>(&self, body: T) -> Result<reqwest::Response>
     where
-        T: TgMethod + TryInto<reqwest::multipart::Form, Error = serde_json::Error>,
+        T: TgMultipartMethod,
     {
         let url = format!("{}/{}", self.tg_url, T::method_name());
         let mut req_builder = self.client.post(url);

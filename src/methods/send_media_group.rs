@@ -4,7 +4,7 @@ use serde_with::skip_serializing_none;
 
 use crate::types::message::MessageEntity;
 
-use super::{ChatId, SendFile, TgMethod, UploadFile};
+use super::{ChatId, SendFile, TgMultipartMethod, UploadFile};
 
 #[skip_serializing_none]
 #[derive(serde::Serialize, tgbotool_derive::Builder)]
@@ -18,7 +18,7 @@ pub struct SendMediaGroup {
     allow_sending_without_reply: Option<bool>,
 }
 
-impl TgMethod for SendMediaGroup {
+impl TgMultipartMethod for SendMediaGroup {
     fn method_name() -> String {
         "sendMediaGroup".to_string()
     }

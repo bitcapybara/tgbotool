@@ -28,24 +28,27 @@ pub(crate) fn tg_method_inner(input: DeriveInput) -> proc_macro2::TokenStream {
             })
         })
         .peekable();
-    let is_multipart_method = if method.peek().is_none() {
-        quote! {}
-    } else {
-        quote! {
+    let tg_method = quote! {
+        impl super::TgMethod for #ident {
+            fn method_name() -> String {
+                #method_name.to_owned()
+            }
+        }
+    };
+    if method.peek().is_none() {
+        return tg_method;
+    }
+    quote! {
+        impl super::TgMultipartMethod for #ident {
+            fn method_name() -> String {
+                #method_name.to_owned()
+            }
+
             fn is_multipart(&self) -> bool {
                 #(
                     #method
                 )||*
             }
-        }
-    };
-    quote! {
-        impl super::TgMethod for #ident {
-            fn method_name() -> String {
-                #method_name.to_owned()
-            }
-
-            #is_multipart_method
         }
     }
 }
