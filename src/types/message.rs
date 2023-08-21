@@ -91,7 +91,7 @@ pub struct Message {
     pub reply_markup: Option<InlineKeyboardMarkup>,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, tgbotool_derive::Builder)]
 pub struct MessageEntity {
     #[serde(rename = "type")]
     pub entity_type: MessageEntityType,
