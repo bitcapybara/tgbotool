@@ -1,3 +1,4 @@
+use heck::ToLowerCamelCase;
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Data, DeriveInput};
@@ -76,6 +77,35 @@ pub(crate) fn multipart_inner(input: DeriveInput) -> TokenStream {
             (false, true) => normal_str,
         }
     });
+    let mut is_multi_method_content = fields
+        .iter()
+        .filter_map(|f| {
+            let fident = f.ident;
+            f.multipart.as_ref().map(|_| {
+                if f.is_option {
+                    quote! {
+                        matches!(self.#fident, Some(super::SendFile::UploadInput { .. }))
+                    }
+                } else {
+                    quote! {
+                        matches!(self.#fident, super::SendFile::UploadInput { .. })
+                    }
+                }
+            })
+        })
+        .peekable();
+    let is_multi_method = if is_multi_method_content.peek().is_some() {
+        quote! {
+            fn is_multipart(&self) -> bool {
+                #(
+                    #is_multi_method_content
+                )||*
+            }
+        }
+    } else {
+        quote! {}
+    };
+    let method_name = struct_ident.to_string().to_lower_camel_case();
     quote! {
         impl TryFrom<#struct_ident> for reqwest::multipart::Form {
             type Error = serde_json::Error;
@@ -89,6 +119,14 @@ pub(crate) fn multipart_inner(input: DeriveInput) -> TokenStream {
 
                 Ok(form)
             }
+        }
+
+        impl super::TgMultipartMethod for #struct_ident {
+            fn method_name() -> String {
+                #method_name.to_owned()
+            }
+
+            #is_multi_method
         }
     }
 }

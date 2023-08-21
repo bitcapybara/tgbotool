@@ -21,6 +21,7 @@ pub trait TgMultipartMethod:
     serde::Serialize + TryInto<reqwest::multipart::Form, Error = serde_json::Error>
 {
     fn method_name() -> String;
+
     fn is_multipart(&self) -> bool {
         false
     }

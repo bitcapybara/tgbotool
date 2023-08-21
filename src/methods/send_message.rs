@@ -5,7 +5,7 @@ use crate::types::message::MessageEntity;
 use super::{ChatId, ReplyMarkup};
 
 #[skip_serializing_none]
-#[derive(serde::Serialize, tgbotool_derive::Builder)]
+#[derive(serde::Serialize, tgbotool_derive::Builder, tgbotool_derive::TgMethod)]
 pub struct SendMessage {
     chat_id: ChatId,
     message_thread_id: Option<u64>,
