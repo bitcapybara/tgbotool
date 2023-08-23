@@ -2,6 +2,8 @@ use std::{iter::Peekable, ops::Range, str::Chars};
 
 use serde_with::skip_serializing_none;
 
+use crate::command::{self, BotCommand};
+
 use super::{
     chat::Chat,
     game::Game,
@@ -89,6 +91,23 @@ pub struct Message {
     pub video_chat_participants_invited: Option<VideoChatParticipantsInvited>,
     pub web_app_data: Option<WebAppData>,
     pub reply_markup: Option<InlineKeyboardMarkup>,
+}
+
+impl Message {
+    pub fn command<C: BotCommand>(&self) -> Result<Option<C>, command::Error> {
+        self.text
+            .as_ref()
+            .filter(|_| self.is_command())
+            .map(|t| C::parse(t))
+            .transpose()
+    }
+
+    fn is_command(&self) -> bool {
+        self.entities
+            .as_ref()
+            .and_then(|entities| entities.get(0))
+            .is_some_and(|en| en.entity_type == MessageEntityType::BotCommand && en.offset == 0)
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, tgbotool_derive::Builder)]
