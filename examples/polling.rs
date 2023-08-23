@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use tgbotool::{client::Client, methods::get_updates::GetUpdatesBuilder, types::update::Update};
+use tgbotool::{methods::get_updates::GetUpdatesBuilder, types::update::Update};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -9,7 +9,7 @@ async fn main() -> anyhow::Result<()> {
         .timeout(Duration::from_secs(40))
         .connect_timeout(Duration::from_secs(5))
         .build()?;
-    let client = Client::new(&token, http_client);
+    let client = tgbotool::Client::new(&token, http_client);
     // get first update id
     let mut update_id = 0;
     loop {
