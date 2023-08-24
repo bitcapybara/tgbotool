@@ -2,6 +2,15 @@ use std::time::Duration;
 
 use tgbotool::{methods::get_updates::GetUpdatesBuilder, types::update::Update};
 
+#[derive(tgbotool_derive::BotCommand)]
+enum Command {
+    Start,
+    AddPlan {
+        _cron: String,
+        _time_zone: Option<String>,
+    },
+}
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let token = std::env::var("TG_BOT_TOKEN")?;

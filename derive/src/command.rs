@@ -74,7 +74,7 @@ pub(crate) fn bot_command_inner(input: DeriveInput) -> TokenStream {
                         Some(inner_type) => quote! {
                             #field_ident: match command::next_arg::<#inner_type>(&mut words) {
                                 Ok(res) => Some(res),
-                                Err(command::TooFewArgs) => None,
+                                Err(command::Error::TooFewArgs) => None,
                                 Err(e) => Err(e)?
                             }
                         },
@@ -99,7 +99,7 @@ pub(crate) fn bot_command_inner(input: DeriveInput) -> TokenStream {
                         Some(inner_type) => quote! {
                             match command::next_arg::<#inner_type>(&mut words) {
                                 Ok(res) => Some(res),
-                                Err(command::TooFewArgs) => None,
+                                Err(command::Error::TooFewArgs) => None,
                                 Err(e) => Err(e)?
                             }
                         },
