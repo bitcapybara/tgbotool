@@ -3,7 +3,7 @@ use core::panic;
 use heck::{ToLowerCamelCase, ToPascalCase, ToSnekCase};
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{parse::ParseStream, Data, DeriveInput, Token};
+use syn::{parse::ParseStream, Data, DeriveInput, GenericArgument, PathArguments, Token, Type};
 
 use crate::parser::parse_lit_str;
 
@@ -69,9 +69,20 @@ pub(crate) fn bot_command_inner(input: DeriveInput) -> TokenStream {
                 for field in &fields.named {
                     let field_ident = &field.ident;
                     let field_ty = &field.ty;
-                    fields_parse.push(quote! {
-                        #field_ident: command::next_arg::<#field_ty>(&mut words)?
-                    });
+                    let option_inner_type = option_inner_type(field_ty);
+                    let init_token = match option_inner_type {
+                        Some(inner_type) => quote! {
+                            #field_ident: match command::next_arg::<#inner_type>(&mut words) {
+                                Ok(res) => Some(res),
+                                Err(crate::command::TooFewArgs) => None,
+                                Err(e) => Err(e)?
+                            }
+                        },
+                        None => quote! {
+                            #field_ident: command::next_arg::<#field_ty>(&mut words)?
+                        },
+                    };
+                    fields_parse.push(init_token);
                 }
                 variants_parse.push(quote! {
                     Self::#var_ident {
@@ -83,9 +94,20 @@ pub(crate) fn bot_command_inner(input: DeriveInput) -> TokenStream {
                 let mut fields_parse = Vec::new();
                 for field in &fields.unnamed {
                     let field_ty = &field.ty;
-                    fields_parse.push(quote! {
-                        command::next_arg::<#field_ty>(&mut words)?
-                    });
+                    let option_inner_type = option_inner_type(field_ty);
+                    let init_token = match option_inner_type {
+                        Some(inner_type) => quote! {
+                            match command::next_arg::<#inner_type>(&mut words) {
+                                Ok(res) => Some(res),
+                                Err(crate::command::TooFewArgs) => None,
+                                Err(e) => Err(e)?
+                            }
+                        },
+                        None => quote! {
+                            command::next_arg::<#field_ty>(&mut words)?
+                        },
+                    };
+                    fields_parse.push(init_token);
                 }
                 variants_parse.push(quote! {
                     Self::#var_ident(#(#fields_parse),*)
@@ -147,4 +169,19 @@ fn case_conv(origin: &str, rename_rule: Option<&str>) -> String {
         Some(_) => panic!("unsupported rename rule"),
         None => origin.to_owned(),
     }
+}
+
+fn option_inner_type(field_ty: &Type) -> Option<&Type> {
+    if let Type::Path(tp) = field_ty {
+        if let Some(seg) = tp.path.segments.last() {
+            if seg.ident == "Option" {
+                if let PathArguments::AngleBracketed(angle) = &seg.arguments {
+                    if let Some(GenericArgument::Type(inner_ty)) = angle.args.last() {
+                        return Some(inner_ty);
+                    }
+                }
+            }
+        }
+    }
+    None
 }

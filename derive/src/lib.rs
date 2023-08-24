@@ -44,18 +44,17 @@ mod tests {
     #[test]
     fn works() {
         let token_stream = r#"
-            pub struct SendPoll {
-                chat_id: ChatId,
-                message_thread_id: Option<u64>,
-                question: String,
-                options: Vec<String>,
-                is_anonymous: Option<bool>,
-                poll_type: Option<PollType>,
+            pub enum SendPoll {
+                A {
+                    a: Option<String>,
+                    b: Option<u64>,
+                },
+                B(Option<String>, Option<u64>)
             }
         "#
         .parse()
         .unwrap();
         let input = syn::parse2(token_stream).unwrap();
-        builder_inner(input);
+        bot_command_inner(input);
     }
 }
