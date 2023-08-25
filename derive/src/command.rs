@@ -63,13 +63,18 @@ pub(crate) fn bot_command_inner(input: DeriveInput) -> TokenStream {
             None => case_conv(&var_ident.to_string(), rename_rule.as_deref()),
         };
         command_names.push(format!("/{name}"));
+        let mut met_option = false;
         match &variant.fields {
             syn::Fields::Named(fields) => {
                 let mut fields_parse = Vec::new();
                 for field in &fields.named {
+                    if met_option {
+                        panic!("only support option in last arg")
+                    }
                     let field_ident = &field.ident;
                     let field_ty = &field.ty;
                     let option_inner_type = option_inner_type(field_ty);
+                    met_option = option_inner_type.is_some();
                     let init_token = match option_inner_type {
                         Some(inner_type) => quote! {
                             #field_ident: match command::next_arg::<#inner_type>(&mut words) {

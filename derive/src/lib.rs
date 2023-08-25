@@ -46,10 +46,10 @@ mod tests {
         let token_stream = r#"
             pub enum SendPoll {
                 A {
-                    a: Option<String>,
+                    a: String,
                     b: Option<u64>,
                 },
-                B(Option<String>, Option<u64>)
+                B(String, Option<u64>)
             }
         "#
         .parse()
