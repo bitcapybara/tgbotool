@@ -45,6 +45,10 @@ pub(crate) fn bot_command_inner(input: DeriveInput) -> TokenStream {
             if var_attr.path().is_ident("command") {
                 continue;
             }
+            // ignore #[doc("...")]
+            if var_attr.path().is_ident("doc") {
+                continue;
+            }
             // #[command(rename = "")]
             let attrs = var_attr
                 .parse_args_with(|input: ParseStream| {

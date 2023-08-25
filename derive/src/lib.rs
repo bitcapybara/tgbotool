@@ -45,6 +45,7 @@ mod tests {
     fn works() {
         let token_stream = r#"
             pub enum SendPoll {
+                /// doc
                 A {
                     a: String,
                     b: Option<u64>,

@@ -108,6 +108,10 @@ impl Message {
             .and_then(|entities| entities.get(0))
             .is_some_and(|en| en.entity_type == MessageEntityType::BotCommand && en.offset == 0)
     }
+
+    pub fn chat_id(&self) -> u64 {
+        self.chat.id
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, tgbotool_derive::Builder)]
