@@ -426,7 +426,7 @@ pub struct ReplyKeyboardRemove {}
 pub struct ForceReply {}
 
 #[skip_serializing_none]
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, tgbotool_derive::Builder)]
 pub struct InlineKeyboardButton {
     pub text: String,
     pub url: Option<String>,
