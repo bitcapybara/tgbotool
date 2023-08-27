@@ -7,7 +7,7 @@ use super::message::Message;
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Chat {
     ///
-    pub id: u64,
+    pub id: i64,
     ///
     pub photo: Option<ChatPhoto>,
     ///

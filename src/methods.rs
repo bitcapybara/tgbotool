@@ -30,7 +30,7 @@ pub trait TgMultipartMethod:
 #[derive(serde::Serialize)]
 #[serde(untagged)]
 pub enum ChatId {
-    Chat(u64),
+    Chat(i64),
     Channel(String),
 }
 

@@ -109,7 +109,7 @@ impl Message {
             .is_some_and(|en| en.entity_type == MessageEntityType::BotCommand && en.offset == 0)
     }
 
-    pub fn chat_id(&self) -> u64 {
+    pub fn chat_id(&self) -> i64 {
         self.chat.id
     }
 }

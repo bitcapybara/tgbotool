@@ -156,7 +156,7 @@ pub struct Animation {
     pub thumbnail: Option<PhotoSize>,
     pub file_name: Option<String>,
     pub mime_type: Option<String>,
-    pub file_size: Option<u64>,
+    pub file_size: Option<i64>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -168,7 +168,7 @@ pub struct Audio {
     pub title: Option<String>,
     pub file_name: Option<String>,
     pub mime_type: Option<String>,
-    pub file_size: Option<u64>,
+    pub file_size: Option<i64>,
     pub thumbnail: Option<PhotoSize>,
 }
 
@@ -179,7 +179,7 @@ pub struct Document {
     pub thumbnail: Option<PhotoSize>,
     pub file_name: Option<String>,
     pub mime_type: Option<String>,
-    pub file_size: Option<u64>,
+    pub file_size: Option<i64>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -188,7 +188,7 @@ pub struct PhotoSize {
     pub file_unique_id: String,
     pub width: usize,
     pub height: usize,
-    pub file_size: Option<u64>,
+    pub file_size: Option<i64>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -208,7 +208,7 @@ pub struct Sticker {
     pub mask_position: Option<MaskPosition>,
     pub custom_emoji_id: Option<String>,
     pub needs_repainting: Option<bool>,
-    pub file_size: Option<u64>,
+    pub file_size: Option<i64>,
 }
 
 #[skip_serializing_none]
@@ -216,7 +216,7 @@ pub struct Sticker {
 pub struct File {
     pub file_id: String,
     pub file_unique_id: String,
-    pub file_size: Option<u64>,
+    pub file_size: Option<i64>,
     pub file_path: Option<String>,
 }
 
@@ -245,7 +245,7 @@ pub struct Video {
     pub thumbnail: Option<PhotoSize>,
     pub file_name: Option<String>,
     pub mime_type: Option<String>,
-    pub file_size: Option<u64>,
+    pub file_size: Option<i64>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -255,7 +255,7 @@ pub struct VideoNote {
     pub length: usize,
     pub duration: usize,
     pub thumbnail: Option<PhotoSize>,
-    pub file_size: Option<u64>,
+    pub file_size: Option<i64>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -264,7 +264,7 @@ pub struct Voice {
     pub file_unique_id: String,
     pub duration: usize,
     pub mime_type: Option<String>,
-    pub file_size: Option<usize>,
+    pub file_size: Option<i64>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
