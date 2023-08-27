@@ -1,6 +1,6 @@
 use serde_with::skip_serializing_none;
 
-use crate::types::message::MessageEntity;
+use crate::types::{message::MessageEntity, InlineKeyboardMarkup};
 
 use super::{ChatId, ReplyMarkup};
 
@@ -46,4 +46,17 @@ pub struct CopyMessage {
     reply_to_message_id: Option<u64>,
     allow_sending_without_reply: Option<bool>,
     reply_markup: Option<ReplyMarkup>,
+}
+
+#[skip_serializing_none]
+#[derive(serde::Serialize, tgbotool_derive::Builder, tgbotool_derive::TgMethod)]
+pub struct EditMessageText {
+    chat_id: Option<ChatId>,
+    message_id: Option<u64>,
+    inline_message_id: Option<String>,
+    text: String,
+    parse_mode: Option<String>,
+    entities: Vec<MessageEntity>,
+    disable_web_page_preview: Option<bool>,
+    reply_markup: Option<InlineKeyboardMarkup>,
 }
