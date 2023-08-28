@@ -6,15 +6,15 @@ pub trait BotCommand: Sized {
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    #[error("")]
+    #[error("Too few args")]
     TooFewArgs,
-    #[error("")]
+    #[error("Too many args")]
     TooManyArgs,
-    #[error("")]
+    #[error("Wrong bot name")]
     WrongBotName,
-    #[error("")]
+    #[error("Unknown command")]
     UnknownCmd,
-    #[error("")]
+    #[error("Parse error: {0}")]
     ParseError(String),
 }
 
