@@ -19,5 +19,5 @@ serde_with = { version = "3.3.0", features = ["macros"] }
 [dev-dependencies]
 anyhow = "1.0.75"
 axum = { version = "0.6.20", features = ["macros"] }
-clap = { version = "4.4.0", features = ["derive", "env"] }
+clap = { version = "4.4.1", features = ["derive", "env"] }
 tokio = { version = "1.32.0", features = ["fs", "macros", "rt-multi-thread"] }
